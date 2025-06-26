@@ -5,6 +5,8 @@ import FiancePhoto from "@/components/FiancePhoto";
 import Button from "@/components/Button";
 import BestManPhoto from "@/components/BestManPhoto";
 import CardMarriage from "@/components/CardMarriage";
+import Product from '@/components/Product';
+import airfryerImage from '@/components/airfryer.png';
 
 export default function Home() {
 
@@ -16,6 +18,12 @@ export default function Home() {
         <FiancePhoto text="Noivo 1"></FiancePhoto>
         <BestManPhoto text="Padrinho"></BestManPhoto>
         <CardMarriage text="Noivo&Noivo"></CardMarriage>
+        <Product
+          id={1}
+          name="Air Fryer"
+          price={299.90}
+          image={airfryerImage}
+        />
       </main>
     </div>
   );
