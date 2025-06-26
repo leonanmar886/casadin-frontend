@@ -2,6 +2,8 @@
 import React from "react";
 import Button from "@/components/Button";
 import Form from '@/components/Form';
+import Product from '@/components/Product';
+import airfryerImage from '@/components/airfryer.png';
 
 export default function Home() {
 
@@ -10,6 +12,12 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Form text="E-mail"/>
         <Button text="Entrar"/>
+        <Product
+          id={1}
+          name="Air Fryer"
+          price={299.90}
+          image={airfryerImage}
+        />
       </main>
     </div>
   );
