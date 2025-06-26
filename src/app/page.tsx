@@ -1,13 +1,11 @@
-"use client";
-import React from "react";
-import Form from '@/components/Form';
-import Button from "@/components/Button";
-import Product from '@/components/Product';
-import FiancePhoto from "@/components/FiancePhoto";
 import BestManPhoto from "@/components/BestManPhoto";
+import Button from "@/components/Button";
 import CardMarriage from "@/components/CardMarriage";
 import FianceBanner from '@/components/FianceBanner';
-import airfryerImage from '@/components/airfryer.png';
+import FiancePhoto from "@/components/FiancePhoto";
+import Form from '@/components/Form';
+import Product from '@/components/Product';
+import airfryerImage from '../assets/airfryer.png';
 
 export default function Home() {
 

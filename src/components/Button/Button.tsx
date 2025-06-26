@@ -1,15 +1,15 @@
 // Button.tsx
-import React, { ButtonHTMLAttributes } from 'react';
-import './Button.css'; // Importa o CSS do botão
+import ButtonMui from '@mui/material/Button';
+import React from 'react';
 
-// 1. Definindo as Props para o nosso componente Button
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-
+interface ButtonProps {
   text: string;
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   type?: 'button' | 'submit' | 'reset';
   className?: string;
   disabled?: boolean;
+  variant?: 'text' | 'outlined' | 'contained';
+  color?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -18,18 +18,20 @@ const Button: React.FC<ButtonProps> = ({
   type = 'button',
   className = '',
   disabled = false,
-  ...rest
+  variant = 'contained',
+  color = 'primary',
 }) => {
   return (
-    <button
-      className={`button-component ${className}`}
+    <ButtonMui
+      variant={variant}
+      color={color}
       onClick={onClick}
       type={type}
+      className={className}
       disabled={disabled}
-      {...rest} 
     >
       {text}
-    </button>
+    </ButtonMui>
   );
 };
 
