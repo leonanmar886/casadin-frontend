@@ -6,6 +6,7 @@ import FiancePhoto from "@/components/FiancePhoto";
 import Form from '@/components/Form';
 import Product from '@/components/Product';
 import airfryerImage from '../assets/airfryer.png';
+import TestAuth from "./TestAuth";
 
 export default function Home() {
 
@@ -25,6 +26,8 @@ export default function Home() {
           price={299.90}
           image={airfryerImage}
         />
+
+        <TestAuth />
       </main>
     </div>
   );
