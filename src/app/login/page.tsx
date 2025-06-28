@@ -112,7 +112,6 @@ export default function LoginPage() {
           width: { xs: "100%", md: "45%" },
           minWidth: 320,
           height: "100%",
-          borderRadius: { md: "19.98px 0 0 19.98px", xs: 0 },
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -247,7 +246,7 @@ export default function LoginPage() {
             }}
           >
             Não tem uma conta?{' '}
-            <Link href="/cadastro" style={{ color: "#138263", textDecoration: "underline" }}>
+            <Link href="/register" style={{ color: "#138263", textDecoration: "underline" }}>
               Cadastre-se
             </Link>
           </Typography>

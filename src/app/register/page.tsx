@@ -1,5 +1,5 @@
 "use client";
-// import { useAuthContext } from "@/providers/AuthProvider";
+import { useAuthContext } from "@/providers/AuthProvider";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
@@ -11,35 +11,36 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import registerBanner from "../../assets/register-banner.png";
+import arrowBack from "../../assets/arrow-back.svg";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    //   const { login, loading, isAuthenticated } = useAuthContext();
+    const { register, loading, isAuthenticated } = useAuthContext();
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         try {
-            //   await login({ email, password });
+            await register({ name, email, password, role: "fiance" });
             router.replace("/home");
         } catch {
             setError("E-mail ou senha inválidos");
         }
     };
 
-    //   useEffect(() => {
-    //     if (isAuthenticated) {
-    //       router.replace("/home");
-    //     }
-    //   }, [isAuthenticated, router]);
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.replace("/home");
+        }
+    }, [isAuthenticated, router]);
 
-    //   if (isAuthenticated) {
-    //     return null;
-    //   }
+    if (isAuthenticated) {
+        return null;
+    }
 
     return (
         <Box
@@ -88,6 +89,20 @@ export default function LoginPage() {
                     }}
                 />
                 {/* Bem-vindo(a) ao Casadin! */}
+                <Link
+                    href="/login"
+                    style={{
+                        position: "absolute",
+                        top: 30 ,
+                        left: 24,
+                        display: "flex",
+                        alignItems: "center",
+                        textDecoration: "none",
+                        zIndex: 2,
+                    }}
+                >
+                    <Image src={arrowBack} alt="Voltar" width={45} height={28} />
+                </Link>
                 <Typography
                     sx={{
                         position: "absolute",
@@ -248,8 +263,7 @@ export default function LoginPage() {
                                 type="submit"
                                 variant="contained"
                                 fullWidth
-                                // disabled={loading}
-                                disabled={false}
+                                disabled={loading}
                                 sx={{
                                     mt: 2,
                                     height: 56,
@@ -263,7 +277,7 @@ export default function LoginPage() {
                                     ':hover': { background: "#106b52" },
                                 }}
                             >
-                                {false ? "Cadastrando..." : "Cadastrar"}
+                                {loading ? "Cadastrando..." : "Cadastrar"}
                             </Button>
                         </Stack>
                     </form>
