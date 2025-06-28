@@ -1,34 +1,28 @@
-// src/app/components/Form.tsx
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+'use client'
 import React from 'react';
+import FormInput from '../FormInput';
+import FormButton from '../FormButton/FormButton';
+import './Index.css'
 
-interface FormProps {
-  text: string;
-}
-
-const Form: React.FC<FormProps> = ({ text }) => {
-  return (
-    <div>
-      <Typography variant="h6" sx={{ mb: 2 }}>{text}</Typography>
-      <TextField
-        variant="outlined"
-        fullWidth
-        sx={{
-          width: 370,
-          height: 45,
-          borderRadius: 2,
-          mb: 2,
-        }}
-        InputProps={{
-          sx: {
-            borderRadius: 2,
-            height: 45,
-          },
-        }}
-      />
-    </div>
-  );
+const Form = () => {
+    return (
+        <div className="form-container">
+            <div className="image-container">
+                <img src="Couple.png" alt="Casal feliz" />
+            </div>
+            <div className='form'>
+                <h1 className='form-title'>
+                    Faça seu cadastro:
+                </h1>
+                <FormInput text='Nome completo'></FormInput>
+                <FormInput text='Email'></FormInput>
+                <FormInput text='Senha'></FormInput>
+                <FormButton>
+                    Cadastrar
+                </FormButton>
+            </div >
+        </div>
+    );
 };
 
 export default Form;
