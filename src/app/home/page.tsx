@@ -1,18 +1,15 @@
 "use client";
+import casadinLogo from "@/assets/casadin-logo.svg";
+import AdornoHome from "@/components/AdornoHome/AdornoHome";
+import CustomButton from "@/components/CustomButton/CustomButton";
+import ProfileMenu from "@/components/ProfileMenu/ProfileMenu";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuthContext } from "@/providers/AuthProvider";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
 import Image from "next/image";
-import casadinLogo from "@/assets/casadin-logo.svg";
 import React from "react";
-import Popover from "@mui/material/Popover";
-import IconButton from "@mui/material/IconButton";
-import xClose from "@/assets/x-close.svg";
-import logoutIcon from "@/assets/logout-icon.svg";
-import ProfileMenu from "@/components/ProfileMenu/ProfileMenu";
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
@@ -50,7 +47,6 @@ export default function HomeProtected() {
         </Avatar>
         <ProfileMenu
           open={open}
-          anchorEl={anchorEl}
           onClose={handleClose}
           user={user}
           logout={logout}
@@ -67,8 +63,39 @@ export default function HomeProtected() {
           alignItems: 'center',
           justifyContent: 'flex-start',
           px: 2,
+          position: 'relative',
         }}
       >
+        {/* Adorno lateral esquerdo */}
+        <Box
+          sx={{
+            position: 'fixed',
+            left: 20,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            display: { xs: 'block', sm: 'block', md: 'block', lg: 'block', xl: 'block' },
+            pointerEvents: 'none',
+          }}
+        >
+          <AdornoHome style={{ width: '20px', height: '403px' }} />
+        </Box>
+
+        {/* Adorno lateral direito (invertido) */}
+        <Box
+          sx={{
+            position: 'fixed',
+            right: 20,
+            top: '50%',
+            transform: 'translateY(-50%) rotate(180deg)',
+            zIndex: 10,
+            display: { xs: 'block', sm: 'block', md: 'block', lg: 'block', xl: 'block' },
+            pointerEvents: 'none',
+          }}
+        >
+          <AdornoHome style={{ width: '20px', height: '403px' }} />
+        </Box>
+
         <Box
           sx={{
             width: '100%',
@@ -77,6 +104,8 @@ export default function HomeProtected() {
             mb: 1,
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
           }}
         >
           {/* Título principal */}
@@ -87,7 +116,7 @@ export default function HomeProtected() {
               fontSize: { xs: 28, md: 40 },
               lineHeight: '48px',
               color: '#0B6D51',
-              textAlign: 'left',
+              textAlign: 'center',
               mb: 2,
             }}
           >
@@ -101,15 +130,14 @@ export default function HomeProtected() {
               fontSize: { xs: 18, md: 26.64 },
               lineHeight: '32px',
               color: '#737373',
-              textAlign: 'left',
+              textAlign: 'center',
               mb: 4,
             }}
           >
             Você ainda não possui casamento para chamar de seu...
           </Typography>
           {/* Botão Criar casamento */}
-          <Button
-            variant="contained"
+          <CustomButton
             sx={{
               width: 376,
               maxWidth: '100%',
@@ -122,7 +150,6 @@ export default function HomeProtected() {
               fontSize: 28,
               boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
               textTransform: 'none',
-              alignSelf: 'center',
               mt: 1,
               ':hover': {
                 background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
@@ -131,7 +158,7 @@ export default function HomeProtected() {
             }}
           >
             Criar meu casamento
-          </Button>
+          </CustomButton>
         </Box>
 
         {/* Seção convites */}
@@ -143,6 +170,8 @@ export default function HomeProtected() {
             mb: 4,
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
           }}
         >
           <Typography
@@ -152,7 +181,7 @@ export default function HomeProtected() {
               fontSize: { xs: 28, md: 40 },
               lineHeight: '48px',
               color: '#0B6D51',
-              textAlign: 'left',
+              textAlign: 'center',
               mb: 2,
             }}
           >
@@ -165,14 +194,13 @@ export default function HomeProtected() {
               fontSize: { xs: 18, md: 26.64 },
               lineHeight: '32px',
               color: '#737373',
-              textAlign: 'left',
+              textAlign: 'center',
               mb: 4,
             }}
           >
             Você ainda não possui convites...
           </Typography>
-          <Button
-            variant="contained"
+          <CustomButton
             sx={{
               width: 376,
               maxWidth: '100%',
@@ -185,7 +213,6 @@ export default function HomeProtected() {
               fontSize: 28,
               boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
               textTransform: 'none',
-              alignSelf: 'center',
               mt: 1,
               ':hover': {
                 background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
@@ -194,7 +221,7 @@ export default function HomeProtected() {
             }}
           >
             Adicionar um casamento
-          </Button>
+          </CustomButton>
         </Box>
       </Box>
     </ProtectedRoute>

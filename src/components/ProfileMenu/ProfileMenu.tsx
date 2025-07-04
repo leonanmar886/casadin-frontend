@@ -1,37 +1,32 @@
-import React from "react";
-import Popover from "@mui/material/Popover";
-import Box from "@mui/material/Box";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Image from "next/image";
-import xClose from "@/assets/x-close.svg";
 import logoutIcon from "@/assets/logout-icon.svg";
+import xClose from "@/assets/x-close.svg";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Image from "next/image";
+import React from "react";
 
 interface ProfileMenuProps {
     open: boolean;
-    anchorEl: HTMLElement | null;
     onClose: () => void;
     user: { name?: string } | null;
     logout: () => void;
 }
 
-const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, anchorEl, onClose, user, logout }) => {
+const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, onClose, user, logout }) => {
     return (
-        <Popover
+        <Drawer
+            anchor="right"
             open={open}
-            anchorEl={anchorEl}
             onClose={onClose}
             PaperProps={{
                 sx: {
-                    width: 306,
-                    height: '100vh',
-                    top: 0,
-                    right: 0,
-                    position: 'fixed',
+                    width: { xs: '100vw', sm: 306 },
                     bgcolor: '#fff',
                     boxShadow: '-6.66px 0px 13.32px rgba(0, 0, 0, 0.25)',
-                    borderRadius: '9.99px 0px 0px 9.99px',
+                    borderRadius: { xs: 0, sm: '9.99px 0px 0px 9.99px' },
                     p: 3,
                 },
             }}
@@ -54,7 +49,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, anchorEl, onClose, user
                 <Box
                     onClick={logout}
                     sx={{
-                        width: 279.72,
+                        width: { xs: '100%', sm: 279.72 },
                         height: 39.96,
                         display: 'flex',
                         flexDirection: 'row',
@@ -85,7 +80,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, anchorEl, onClose, user
                     </Typography>
                 </Box>
             </Box>
-        </Popover>
+        </Drawer>
     );
 };
 
