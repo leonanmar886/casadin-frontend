@@ -10,10 +10,40 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Image from "next/image";
 import React from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import TextField from "@mui/material/TextField";
+import CloseIcon from "@mui/icons-material/Close";
+import CustomModal from "@/components/CustomModal/CustomModal";
+import { weddingService } from "@/services/weddingService";
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [code, setCode] = React.useState("");
+  const [loadingJoin, setLoadingJoin] = React.useState(false);
+  const [errorJoin, setErrorJoin] = React.useState("");
+  const handleSubmitCode = async () => {
+    setLoadingJoin(true);
+    setErrorJoin("");
+    try {
+      await weddingService.joinWedding(code);
+      setModalOpen(false);
+      setCode("");
+      // Aqui você pode atualizar o estado dos convites/casamentos se necessário
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        setErrorJoin("Código não existente");
+      } else {
+        setErrorJoin("Erro ao entrar no casamento");
+      }
+    } finally {
+      setLoadingJoin(false);
+    }
+  };
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -108,20 +138,21 @@ export default function HomeProtected() {
             textAlign: 'center',
           }}
         >
-          {/* Título principal */}
-          <Typography
-            sx={{
-              fontFamily: 'Figtree',
-              fontWeight: 600,
-              fontSize: { xs: 28, md: 40 },
-              lineHeight: '48px',
-              color: '#0B6D51',
-              textAlign: 'center',
-              mb: 2,
-            }}
-          >
-            Meu casamento
-          </Typography>
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography
+              sx={{
+                fontFamily: 'Figtree',
+                fontWeight: 600,
+                fontSize: { xs: 28, md: 40 },
+                lineHeight: '48px',
+                color: '#0B6D51',
+                textAlign: 'left',
+              }}
+            >
+              Meu casamento
+            </Typography>
+            <Box />
+          </Box>
           {/* Mensagem principal */}
           <Typography
             sx={{
@@ -174,19 +205,43 @@ export default function HomeProtected() {
             textAlign: 'center',
           }}
         >
-          <Typography
-            sx={{
-              fontFamily: 'Figtree',
-              fontWeight: 600,
-              fontSize: { xs: 28, md: 40 },
-              lineHeight: '48px',
-              color: '#0B6D51',
-              textAlign: 'center',
-              mb: 2,
-            }}
-          >
-            Meus convites
-          </Typography>
+          {/* Linha superior: título e ação */}
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography
+              sx={{
+                fontFamily: 'Figtree',
+                fontWeight: 600,
+                fontSize: { xs: 28, md: 40 },
+                lineHeight: '48px',
+                color: '#0B6D51',
+                textAlign: 'left',
+              }}
+            >
+              Meus convites
+            </Typography>
+            {user?.role === 'guest' && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '6.66px' }}>
+                {/* Ícone placeholder */}
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="7.5" cy="7.5" r="7" stroke="#138263" strokeWidth="1.3" />
+                  <line x1="7.5" y1="4" x2="7.5" y2="11" stroke="#138263" strokeWidth="1.3" />
+                  <line x1="4" y1="7.5" x2="11" y2="7.5" stroke="#138263" strokeWidth="1.3" />
+                </svg>
+                <Typography
+                  sx={{
+                    fontFamily: 'Figtree',
+                    fontWeight: 400,
+                    fontSize: '16.65px',
+                    lineHeight: '20px',
+                    color: '#138263',
+                  }}
+                >
+                  Adicionar Casamento
+                </Typography>
+              </Box>
+            )}
+          </Box>
+          {/* Mensagem principal */}
           <Typography
             sx={{
               fontFamily: 'Figtree',
@@ -219,10 +274,20 @@ export default function HomeProtected() {
                 opacity: 0.9,
               },
             }}
+            onClick={() => setModalOpen(true)}
           >
             Adicionar um casamento
           </CustomButton>
         </Box>
+        <CustomModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          code={code}
+          setCode={setCode}
+          onSubmit={handleSubmitCode}
+          loading={loadingJoin}
+          error={errorJoin}
+        />
       </Box>
     </ProtectedRoute>
   );
