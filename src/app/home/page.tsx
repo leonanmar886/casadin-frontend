@@ -18,6 +18,7 @@ import TextField from "@mui/material/TextField";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
+import { useRouter } from "next/navigation";
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
@@ -26,6 +27,7 @@ export default function HomeProtected() {
   const [code, setCode] = React.useState("");
   const [loadingJoin, setLoadingJoin] = React.useState(false);
   const [errorJoin, setErrorJoin] = React.useState("");
+  const router = useRouter();
   const handleSubmitCode = async () => {
     setLoadingJoin(true);
     setErrorJoin("");
@@ -187,6 +189,7 @@ export default function HomeProtected() {
                 opacity: 0.9,
               },
             }}
+            onClick={() => router.push("/criar-casamento")}
           >
             Criar meu casamento
           </CustomButton>
