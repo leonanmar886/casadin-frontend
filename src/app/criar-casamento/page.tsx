@@ -3,12 +3,17 @@ import CardMarriage from '@/components/CardMarriage/CardMarriage';
 import Image from 'next/image';
 import { useState, useRef } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
-import PersonIcon from '@mui/icons-material/Person';
+import FiancePhoto from '@/components/FiancePhoto/FiancePhoto';
+import BestManPhoto from '@/components/BestManPhoto/BestManPhoto';
+import CountdownTimer from '@/components/CountdownTimer';
+import CustomButton from '@/components/CustomButton/CustomButton';
+import TextField from '@mui/material/TextField';
+import ColorPalette from '@/components/ColorPalette';
 
 export default function CriarCasamentoPage() {
   const [nomeNoivo, setNomeNoivo] = useState('Fulano');
   const [nomeNoiva, setNomeNoiva] = useState('Fulana');
-  const [dataCasamento, setDataCasamento] = useState('29 de Abril de 2026');
+  const [dataCasamento, setDataCasamento] = useState('29 de Abril de 2026 às 16h');
   const [textoCasal, setTextoCasal] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum odio sem, in accumsan lacus vestibulum tincidunt. Pellentesque vitae faucibus mauris. Integer elit urna, egestas vel nibh non, tristique egestas diam.');
   const [nomesPadrinhos, setNomesPadrinhos] = useState([
     'Padrinho 1',
@@ -17,39 +22,83 @@ export default function CriarCasamentoPage() {
     'Padrinho 4',
     'Padrinho 5',
   ]);
-  const [fotoNoiva, setFotoNoiva] = useState<string | null>(null);
-  const fileInputNoivaRef = useRef<HTMLInputElement>(null);
   const contagemRef = useRef<HTMLDivElement>(null);
   const casalRef = useRef<HTMLDivElement>(null);
   const padrinhosRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
   const presentesRef = useRef<HTMLDivElement>(null);
-  const [fotoNoivo, setFotoNoivo] = useState<string | null>(null);
-  const fileInputNoivoRef = useRef<HTMLInputElement>(null);
-  const handleFotoNoivoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFotoNoivo(URL.createObjectURL(e.target.files[0]));
-    }
-  };
-  const handleFotoNoivaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFotoNoiva(URL.createObjectURL(e.target.files[0]));
-    }
-  };
   const [fotosPadrinhos, setFotosPadrinhos] = useState<(string | null)[]>(Array(nomesPadrinhos.length).fill(null));
-  const fileInputsPadrinhosRef = useRef<(HTMLInputElement | null)[]>([]);
-  const handleFotoPadrinhoChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const novasFotos = [...fotosPadrinhos];
-      novasFotos[idx] = URL.createObjectURL(e.target.files[0]);
-      setFotosPadrinhos(novasFotos);
+
+  const adicionarPadrinho = () => {
+    const novoNome = `Padrinho ${nomesPadrinhos.length + 1}`;
+    setNomesPadrinhos([...nomesPadrinhos, novoNome]);
+    setFotosPadrinhos([...fotosPadrinhos, null]);
+  };
+
+  const removerPadrinho = (index: number) => {
+    const novosNomes = nomesPadrinhos.filter((_, idx) => idx !== index);
+    const novasFotos = fotosPadrinhos.filter((_, idx) => idx !== index);
+    setNomesPadrinhos(novosNomes);
+    setFotosPadrinhos(novasFotos);
+  };
+
+  // Função para converter data brasileira para formato datetime-local
+  const brazilianDateToDatetimeLocal = (brazilianDate: string): string => {
+    const months: { [key: string]: number } = {
+      'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3,
+      'maio': 4, 'junho': 5, 'julho': 6, 'agosto': 7,
+      'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11
+    };
+
+    const match = brazilianDate.match(/(\d+)\s+de\s+(\w+)\s+de\s+(\d+)\s+às\s+(\d+)h/);
+    
+    if (match) {
+      const [, day, month, year, hour] = match;
+      const monthIndex = months[month.toLowerCase()];
+      
+      if (monthIndex !== undefined) {
+        const date = new Date(parseInt(year), monthIndex, parseInt(day), parseInt(hour), 0, 0);
+        return date.toISOString().slice(0, 16); // Formato YYYY-MM-DDTHH:MM
+      }
     }
+    
+    // Fallback: retorna data atual + 1 ano
+    const fallbackDate = new Date();
+    fallbackDate.setFullYear(fallbackDate.getFullYear() + 1);
+    return fallbackDate.toISOString().slice(0, 16);
+  };
+
+  // Função para converter datetime-local para formato brasileiro
+  const datetimeLocalToBrazilian = (datetimeLocal: string): string => {
+    const date = new Date(datetimeLocal);
+    const months = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    const hour = date.getHours();
+    
+    return `${day} de ${month} de ${year} às ${hour}h`;
+  };
+
+  // Estado para o input datetime-local
+  const [datetimeLocal, setDatetimeLocal] = useState(brazilianDateToDatetimeLocal(dataCasamento));
+  
+  // Estado para a cor principal do tema
+  const [primaryColor, setPrimaryColor] = useState('#138263');
+
+  // Função para lidar com a seleção de cor da paleta
+  const handleColorSelect = (color: string) => {
+    setPrimaryColor(color);
   };
 
   return (
     <div style={{ background: '#F8F8F8', minHeight: '100vh' }}>
       {/* Header */}
-      <header style={{ background: '#138263', color: '#fff', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header style={{ background: primaryColor, color: '#fff', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 700, fontSize: 24, letterSpacing: 2 }}>CASADIN</span>
         <nav style={{ display: 'flex', gap: 24 }}>
           <a style={{ cursor: 'pointer' }} onClick={() => contagemRef.current?.scrollIntoView({ behavior: 'smooth' })}>HOME</a>
@@ -108,103 +157,62 @@ export default function CriarCasamentoPage() {
           <Image src="/flores-nova.png" alt="Flores" width={310} height={205} />
         </div>
         <div style={{ fontSize: 18, color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          <input
-            type="text"
-            value={dataCasamento}
-            onChange={e => setDataCasamento(e.target.value)}
-            style={{
-              fontSize: 18,
-              color: '#888',
-              textAlign: 'center',
-              border: 'none',
-              background: 'transparent',
-              outline: 'none',
-              width: dataCasamento.length > 0 ? dataCasamento.length * 10 : 120,
-              minWidth: 120,
-              maxWidth: 300
+          <TextField
+            type="datetime-local"
+            value={datetimeLocal}
+            onChange={(e) => {
+              setDatetimeLocal(e.target.value);
+              setDataCasamento(datetimeLocalToBrazilian(e.target.value));
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                color: '#888',
+                fontSize: 18,
+                textAlign: 'center',
+                '& fieldset': {
+                  border: 'none',
+                },
+                '&:hover fieldset': {
+                  border: 'none',
+                },
+                '&.Mui-focused fieldset': {
+                  border: 'none',
+                },
+              },
+              '& .MuiInputBase-input': {
+                textAlign: 'center',
+                padding: '8px 12px',
+                width: '200px',
+              },
+            }}
+            InputLabelProps={{
+              shrink: false,
             }}
           />
           <EditIcon sx={{ color: '#2563eb', fontSize: 18 }} />
         </div>
-        <div style={{ position: 'absolute', right: 32, top: 32, textAlign: 'right' }}>
-          <div>Paleta de cores</div>
-          <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
-            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#E6E6FA', display: 'inline-block' }} />
-            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#F5E6E8', display: 'inline-block' }} />
-            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#B8E0D2', display: 'inline-block' }} />
-            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#F9F7C9', display: 'inline-block' }} />
-            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#F7D9C4', display: 'inline-block' }} />
-          </div>
-          <div style={{ fontSize: 14, color: '#888' }}>O código do seu casamento é:</div>
-          <div style={{ background: '#E6F4EA', color: '#138263', borderRadius: 8, padding: '2px 12px', fontWeight: 600, display: 'inline-block', marginTop: 4 }}>Ak3t56</div>
-        </div>
+        <ColorPalette 
+          colors={['#EE5D99', '#78B6F0', '#FFB469', '#6CA370', '#A396DB']}
+          weddingCode="Ak3t56"
+          position="top-right"
+          onColorSelect={handleColorSelect}
+          primaryColor={primaryColor}
+        />
       </section>
 
       {/* Contagem regressiva */}
-      <section ref={contagemRef} style={{ background: '#138263', color: '#fff', padding: 32, textAlign: 'center' }}>
-        <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>CONTAGEM REGRESSIVA</div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-          <div><div style={{ fontSize: 32, fontWeight: 700 }}>304</div><div>Dias</div></div>
-          <div><div style={{ fontSize: 32, fontWeight: 700 }}>00</div><div>Meses</div></div>
-          <div><div style={{ fontSize: 32, fontWeight: 700 }}>02</div><div>Minutos</div></div>
-          <div><div style={{ fontSize: 32, fontWeight: 700 }}>55</div><div>Segundos</div></div>
-        </div>
+      <section ref={contagemRef} style={{ background: primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
+        <CountdownTimer targetDate={dataCasamento} size="large" />
       </section>
 
       {/* O Casal */}
       <section ref={casalRef} style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>O CASAL</h1>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 48, marginBottom: 16 }}>
-          <div>
-            <div
-              style={{ width: 300, height: 300, borderRadius: '50%', background: '#A9A9A9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 32px', cursor: 'pointer', overflow: 'hidden' }}
-              onClick={() => fileInputNoivoRef.current?.click()}
-              title="Clique para alterar a foto"
-            >
-              {fotoNoivo ? (
-                <img
-                  src={fotoNoivo}
-                  alt="Foto do Noivo"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <PersonIcon sx={{ color: '#e0e0e0', fontSize: 70 }} />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputNoivoRef}
-                style={{ display: 'none' }}
-                onChange={handleFotoNoivoChange}
-              />
-            </div>
-            <div style={{ fontWeight: 500, fontSize: 18 }}>{nomeNoivo}</div>
-          </div>
-          <div>
-            <div
-              style={{ width: 300, height: 300, borderRadius: '50%', background: '#A9A9A9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 32px', cursor: 'pointer', overflow: 'hidden' }}
-              onClick={() => fileInputNoivaRef.current?.click()}
-              title="Clique para alterar a foto"
-            >
-              {fotoNoiva ? (
-                <img
-                  src={fotoNoiva}
-                  alt="Foto da Noiva"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <PersonIcon sx={{ color: '#e0e0e0', fontSize: 70 }} />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputNoivaRef}
-                style={{ display: 'none' }}
-                onChange={handleFotoNoivaChange}
-              />
-            </div>
-            <div style={{ fontWeight: 500, fontSize: 18 }}>{nomeNoiva}</div>
-          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginTop: 32 }}>
+          <FiancePhoto text={nomeNoivo} />
+          <FiancePhoto text={nomeNoiva} />
+        </div>
         </div>
         <div style={{ maxWidth: 700, margin: '0 auto', color: '#555', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           <textarea
@@ -243,68 +251,43 @@ export default function CriarCasamentoPage() {
         }}>
           {nomesPadrinhos.map((nome, idx) => (
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div
-                style={{ width: 80, height: 80, borderRadius: '50%', background: '#A9A9A9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', cursor: 'pointer', overflow: 'hidden' }}
-                onClick={() => fileInputsPadrinhosRef.current[idx]?.click()}
-                title="Clique para alterar a foto"
-              >
-                {fotosPadrinhos[idx] ? (
-                  <img
-                    src={fotosPadrinhos[idx] as string}
-                    alt={`Foto do Padrinho ${idx + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <PersonIcon sx={{ color: '#e0e0e0', fontSize: 48 }} />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={el => fileInputsPadrinhosRef.current[idx] = el}
-                  style={{ display: 'none' }}
-                  onChange={e => handleFotoPadrinhoChange(idx, e)}
-                />
-              </div>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <input
-                  type="text"
-                  value={nome}
-                  onChange={e => {
-                    const novosNomes = [...nomesPadrinhos];
-                    novosNomes[idx] = e.target.value;
-                    setNomesPadrinhos(novosNomes);
-                  }}
-                  style={{
-                    fontWeight: 500,
-                    fontSize: 16,
-                    textAlign: 'center',
-                    border: 'none',
-                    background: 'transparent',
-                    outline: 'none',
-                    width: nome.length > 0 ? nome.length * 10 : 60,
-                    minWidth: 60,
-                    maxWidth: 120
-                  }}
-                />
-                <EditIcon sx={{ color: '#2563eb', fontSize: 18 }} />
-              </span>
+              <BestManPhoto 
+                text={nome}
+                size={80}
+                editable={true}
+                showDelete={true}
+                onPhotoChange={(photoUrl) => {
+                  const novasFotos = [...fotosPadrinhos];
+                  novasFotos[idx] = photoUrl;
+                  setFotosPadrinhos(novasFotos);
+                }}
+                onNameChange={(newName) => {
+                  const novosNomes = [...nomesPadrinhos];
+                  novosNomes[idx] = newName;
+                  setNomesPadrinhos(novosNomes);
+                }}
+                onDelete={() => removerPadrinho(idx)}
+              />
             </div>
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}>+</div>
+            <div 
+              style={{ width: 80, height: 80, borderRadius: '50%', background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}
+              onClick={adicionarPadrinho}
+            >+</div>
             <div>Adicionar padrinho</div>
           </div>
         </div>
       </section>
 
       {/* Informações */}
-      <section ref={infoRef} style={{ background: '#138263', color: '#fff', padding: 32, textAlign: 'center' }}>
+      <section ref={infoRef} style={{ background: primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>INFORMAÇÕES</h1>
         <div style={{ fontSize: 18, marginBottom: 8 }}>Igreja Nossa Senhora de Fátima - Bairro de Fátima</div>
         <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
           <Image src="/flores-nova.png" alt="Flores" width={310} height={205} />
         </div>
-        <div style={{ fontSize: 18 }}>{dataCasamento} às 16h</div>
+        <div style={{ fontSize: 18 }}>{dataCasamento}</div>
       </section>
 
       {/* Lista de Presentes */}
@@ -345,6 +328,32 @@ export default function CriarCasamentoPage() {
         </div>
         <div style={{ color: '#555', fontSize: 16 }}>Com carinho, {nomeNoivo} & {nomeNoiva}.</div>
       </section>
+
+      <div style={{ background: '#fff', display: 'flex', justifyContent: 'center', padding: 32 }}>
+      <CustomButton
+            sx={{
+              width: 376,
+              maxWidth: '100%',
+              height: 87,
+              borderRadius: '27.3px',
+              background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+              color: '#0B6D51',
+              fontFamily: 'Figtree',
+              fontWeight: 300,
+              fontSize: 28,
+              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+              textTransform: 'none',
+              mt: 1,
+              ':hover': {
+                background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                opacity: 0.9,
+              },
+            }}
+            onClick={() => {}}
+          >
+            Salvar
+          </CustomButton>
+          </div>
     </div>
   );
 } 

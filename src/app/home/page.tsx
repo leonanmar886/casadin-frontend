@@ -10,12 +10,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Image from "next/image";
 import React from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-import CloseIcon from "@mui/icons-material/Close";
 import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
 import { useRouter } from "next/navigation";
@@ -36,8 +30,8 @@ export default function HomeProtected() {
       setModalOpen(false);
       setCode("");
       // Aqui você pode atualizar o estado dos convites/casamentos se necessário
-    } catch (err: any) {
-      if (err?.response?.status === 404) {
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'status' in err.response && err.response.status === 404) {
         setErrorJoin("Código não existente");
       } else {
         setErrorJoin("Erro ao entrar no casamento");
