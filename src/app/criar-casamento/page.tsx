@@ -51,17 +51,17 @@ export default function CriarCasamentoPage() {
     };
 
     const match = brazilianDate.match(/(\d+)\s+de\s+(\w+)\s+de\s+(\d+)\s+às\s+(\d+)h/);
-    
+
     if (match) {
       const [, day, month, year, hour] = match;
       const monthIndex = months[month.toLowerCase()];
-      
+
       if (monthIndex !== undefined) {
         const date = new Date(parseInt(year), monthIndex, parseInt(day), parseInt(hour), 0, 0);
         return date.toISOString().slice(0, 16); // Formato YYYY-MM-DDTHH:MM
       }
     }
-    
+
     // Fallback: retorna data atual + 1 ano
     const fallbackDate = new Date();
     fallbackDate.setFullYear(fallbackDate.getFullYear() + 1);
@@ -75,20 +75,22 @@ export default function CriarCasamentoPage() {
       'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
-    
+
     const day = date.getDate();
     const month = months[date.getMonth()];
     const year = date.getFullYear();
     const hour = date.getHours();
-    
+
     return `${day} de ${month} de ${year} às ${hour}h`;
   };
 
   // Estado para o input datetime-local
   const [datetimeLocal, setDatetimeLocal] = useState(brazilianDateToDatetimeLocal(dataCasamento));
-  
+
   // Estado para a cor principal do tema
   const [primaryColor, setPrimaryColor] = useState('#138263');
+  // Estado para o código do casamento (inicialmente da primeira cor)
+  const [weddingCode, setWeddingCode] = useState('ROSA123');
 
   // Função para lidar com a seleção de cor da paleta
   const handleColorSelect = (color: string) => {
@@ -191,10 +193,9 @@ export default function CriarCasamentoPage() {
           />
           <EditIcon sx={{ color: '#2563eb', fontSize: 18 }} />
         </div>
-        <ColorPalette 
-          colors={['#EE5D99', '#78B6F0', '#FFB469', '#6CA370', '#A396DB']}
-          weddingCode="Ak3t56"
-          position="top-right"
+        <ColorPalette
+          colors={['#EE5D99', '#78B6F0', '#FFB469', '#6CA370', '#A396DB', '#F6F688']}
+          weddingCode={weddingCode}
           onColorSelect={handleColorSelect}
           primaryColor={primaryColor}
         />
@@ -210,9 +211,9 @@ export default function CriarCasamentoPage() {
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>O CASAL</h1>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 48, marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginTop: 32 }}>
-          <FiancePhoto text={nomeNoivo} />
-          <FiancePhoto text={nomeNoiva} />
-        </div>
+            <FiancePhoto text={nomeNoivo} />
+            <FiancePhoto text={nomeNoiva} />
+          </div>
         </div>
         <div style={{ maxWidth: 700, margin: '0 auto', color: '#555', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           <textarea
@@ -251,7 +252,7 @@ export default function CriarCasamentoPage() {
         }}>
           {nomesPadrinhos.map((nome, idx) => (
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <BestManPhoto 
+              <BestManPhoto
                 text={nome}
                 size={80}
                 editable={true}
@@ -271,7 +272,7 @@ export default function CriarCasamentoPage() {
             </div>
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div 
+            <div
               style={{ width: 80, height: 80, borderRadius: '50%', background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}
               onClick={adicionarPadrinho}
             >+</div>
@@ -330,30 +331,30 @@ export default function CriarCasamentoPage() {
       </section>
 
       <div style={{ background: '#fff', display: 'flex', justifyContent: 'center', padding: 32 }}>
-      <CustomButton
-            sx={{
-              width: 376,
-              maxWidth: '100%',
-              height: 87,
-              borderRadius: '27.3px',
+        <CustomButton
+          sx={{
+            width: 376,
+            maxWidth: '100%',
+            height: 87,
+            borderRadius: '27.3px',
+            background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+            color: '#0B6D51',
+            fontFamily: 'Figtree',
+            fontWeight: 300,
+            fontSize: 28,
+            boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+            textTransform: 'none',
+            mt: 1,
+            ':hover': {
               background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-              color: '#0B6D51',
-              fontFamily: 'Figtree',
-              fontWeight: 300,
-              fontSize: 28,
-              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
-              textTransform: 'none',
-              mt: 1,
-              ':hover': {
-                background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                opacity: 0.9,
-              },
-            }}
-            onClick={() => {}}
-          >
-            Salvar
-          </CustomButton>
-          </div>
+              opacity: 0.9,
+            },
+          }}
+          onClick={() => { }}
+        >
+          Salvar
+        </CustomButton>
+      </div>
     </div>
   );
 } 

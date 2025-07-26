@@ -1,81 +1,119 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 
 interface ColorPaletteProps {
   colors?: string[];
   weddingCode?: string;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
   onColorSelect?: (color: string) => void;
   primaryColor?: string;
 }
 
-const ColorPalette: React.FC<ColorPaletteProps> = ({ 
-  colors = ['#E6E6FA', '#F5E6E8', '#B8E0D2', '#F9F7C9', '#F7D9C4'],
-  weddingCode = 'Ak3t56',
-  position = 'top-right',
-  onColorSelect,
-  primaryColor = '#138263'
-}) => {
-  const getPositionStyles = () => {
-    switch (position) {
-      case 'top-left':
-        return { position: 'absolute' as const, left: 32, top: 32, textAlign: 'left' as const };
-      case 'bottom-right':
-        return { position: 'absolute' as const, right: 32, bottom: 32, textAlign: 'right' as const };
-      case 'bottom-left':
-        return { position: 'absolute' as const, left: 32, bottom: 32, textAlign: 'left' as const };
-      default: // top-right
-        return { position: 'absolute' as const, right: 32, top: 32, textAlign: 'right' as const };
-    }
-  };
+const DEFAULT_COLORS = [
+  '#FFB469', // Ellipse 1
+  '#6CA370', // Ellipse 2
+  '#EE5D99', // Ellipse 3
+  '#78B6F0', // Ellipse 4
+  '#A396DB', // Ellipse 5
+  '#F6F688', // Ellipse 6
+];
 
-  const handleColorClick = (color: string) => {
+const ELLIPSE_LAYOUT = [
+  { left: 60, top: 99.24 },  // Ellipse 1
+  { left: 110, top: 99.24 },  // Ellipse 2
+  { left: 60, top: 23.98 },  // Ellipse 3
+  { left: 110, top: 23.98 },  // Ellipse 4
+  { left: 60, top: 174.5 },  // Ellipse 5
+  { left: 110, top: 174.5 },  // Ellipse 6
+];
+
+const ColorPalette: React.FC<ColorPaletteProps> = ({
+  colors = DEFAULT_COLORS,
+  onColorSelect,
+}) => {
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+
+  const handleColorClick = (color: string, idx: number) => {
+    setSelectedIdx(idx);
     if (onColorSelect) {
       onColorSelect(color);
     }
   };
 
   return (
-    <Box sx={getPositionStyles()}>
-      <Box sx={{ fontSize: 14, color: '#333', fontWeight: 500, marginBottom: 8 }}>
+    <Box
+      sx={{
+        position: 'absolute',
+        width: 123.88,
+        height: 279.05,
+        right: 100,
+        top: 150,
+        pointerEvents: 'none', // disables drag, only ellipses are clickable
+      }}
+    >
+      {/* Title */}
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 121.88,
+          height: 56,
+          top: -50,
+          right: -35,
+          fontFamily: 'Figtree, sans-serif',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          fontSize: 23.31,
+          lineHeight: '28px',
+          textAlign: 'center',
+          color: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'auto',
+        }}
+      >
         Paleta de cores
       </Box>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        {colors.map((color, index) => (
-          <Box
-            key={index}
-            sx={{
-              width: 18,
-              height: 18,
-              borderRadius: '50%',
-              background: color,
-              display: 'inline-block',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease',
-              '&:hover': {
-                transform: 'scale(1.2)',
-              }
-            }}
-            title={`Cor ${index + 1}: ${color}`}
-            onClick={() => handleColorClick(color)}
-          />
-        ))}
-      </Box>
-      <Box sx={{ fontSize: 14, color: '#888', marginTop: 12 }}>
-        O código do seu casamento é:
-      </Box>
-      <Box sx={{ 
-        background: '#E6F4EA', 
-        color: primaryColor, 
-        borderRadius: 8, 
-        padding: '2px 12px', 
-        fontWeight: 600, 
-        display: 'inline-block', 
-        marginTop: 4,
-        fontSize: 14
-      }}>
-        {weddingCode}
-      </Box>
+      {/* Rotated Frame */}
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 221.11,
+          height: 123.88,
+          top: 57.94,
+          background: '#FFF',
+          boxShadow: '-2.664px -3.33px 2.664px rgba(0, 0, 0, 0.25)',
+          borderRadius: 9.99,
+          transform: 'rotate(-90deg)',
+          zIndex: 1,
+        }}
+      />
+      {/* Color Circles */}
+      {colors.slice(0, 6).map((color, idx) => (
+        <Box
+          key={idx}
+          sx={{
+            position: 'absolute',
+            width: 41.29,
+            height: 41.29,
+            left: ELLIPSE_LAYOUT[idx].left,
+            top: ELLIPSE_LAYOUT[idx].top,
+            background: color,
+            borderRadius: '50%',
+            transform: 'rotate(-90deg)',
+            zIndex: 2,
+            cursor: 'pointer',
+            border: selectedIdx === idx ? '3px solid #536565' : '2px solid #fff',
+            boxSizing: 'border-box',
+            transition: 'transform 0.2s, border 0.2s',
+            pointerEvents: 'auto',
+            '&:hover': {
+              transform: 'rotate(-90deg) scale(1.1)',
+            },
+          }}
+          title={`Cor ${idx + 1}: ${color}`}
+          onClick={() => handleColorClick(color, idx)}
+        />
+      ))}
     </Box>
   );
 };
