@@ -274,14 +274,22 @@ export default function HomeProtected() {
                 opacity: 0.9,
               },
             }}
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              setCode("");
+              setErrorJoin("");
+              setModalOpen(true);
+            }}
           >
             Adicionar um casamento
           </CustomButton>
         </Box>
         <CustomModal
           open={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {
+            setModalOpen(false);
+            setCode("");
+            setErrorJoin("");
+          }}
           code={code}
           setCode={setCode}
           onSubmit={handleSubmitCode}
