@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Box from '@mui/material/Box';
 
 interface ColorPaletteProps {
@@ -31,11 +31,27 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({
   onColorSelect,
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [customColor, setCustomColor] = useState<string>(DEFAULT_COLORS[5]);
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   const handleColorClick = (color: string, idx: number) => {
     setSelectedIdx(idx);
     if (onColorSelect) {
       onColorSelect(color);
+    }
+  };
+
+  const handleCustomColorClick = () => {
+    if (colorInputRef.current) {
+      colorInputRef.current.click();
+    }
+  };
+
+  const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomColor(e.target.value);
+    setSelectedIdx(5);
+    if (onColorSelect) {
+      onColorSelect(e.target.value);
     }
   };
 
@@ -88,7 +104,7 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({
         }}
       />
       {/* Color Circles */}
-      {colors.slice(0, 6).map((color, idx) => (
+      {colors.slice(0, 5).map((color, idx) => (
         <Box
           key={idx}
           sx={{
@@ -114,6 +130,54 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({
           onClick={() => handleColorClick(color, idx)}
         />
       ))}
+      {/* Elipse 6: Color Picker */}
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 41.29,
+          height: 41.29,
+          left: ELLIPSE_LAYOUT[5].left,
+          top: ELLIPSE_LAYOUT[5].top,
+          background: selectedIdx === 5
+            ? customColor
+            : 'conic-gradient(#6a6aff, #6aff6a, #ff6a6a, #6a6aff)',
+          borderRadius: '50%',
+          transform: 'rotate(-90deg)',
+          zIndex: 2,
+          cursor: 'pointer',
+          border: selectedIdx === 5 ? '3px solid #536565' : '2px solid #fff',
+          boxSizing: 'border-box',
+          transition: 'transform 0.2s, border 0.2s',
+          pointerEvents: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          '&:hover': {
+            transform: 'rotate(-90deg) scale(1.1)',
+          },
+        }}
+        title={selectedIdx === 5 ? `Cor personalizada: ${customColor}` : 'Escolha uma cor'}
+        onClick={handleCustomColorClick}
+      >
+        <input
+          type="color"
+          ref={colorInputRef}
+          value={customColor}
+          onChange={handleCustomColorChange}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0,
+            cursor: 'pointer',
+            border: 'none',
+            padding: 0,
+          }}
+          tabIndex={-1}
+        />
+      </Box>
     </Box>
   );
 };
