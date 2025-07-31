@@ -34,10 +34,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, onClose, user, logout }
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
                 <div>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: '#D9D9D9', width: 47, height: 47, fontSize: 26, color: '#000', fontFamily: 'Figtree', fontWeight: 400 }}>
+                        <Avatar sx={{ bgcolor: '#D9D9D9', width: 47, height: 47, fontSize: 26, color: '#000', fontFamily: 'var(--font-figtree)', fontWeight: 400 }}>
                             {user?.name?.[0]?.toUpperCase()}
                         </Avatar>
-                        <Typography sx={{ ml: 2, fontFamily: 'Figtree', fontWeight: 400, fontSize: 20, color: '#000' }}>
+                        <Typography sx={{ ml: 2, fontFamily: 'var(--font-figtree)', fontWeight: 400, fontSize: 20, color: '#000' }}>
                             {user?.name || 'Usuário'}
                         </Typography>
                         <IconButton onClick={onClose} sx={{ ml: 'auto' }}>
@@ -68,7 +68,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, onClose, user, logout }
                     <Image src={logoutIcon} alt="Logout" width={18} height={18} />
                     <Typography
                         sx={{
-                            fontFamily: 'Figtree',
+                            fontFamily: 'var(--font-figtree)',
                             fontWeight: 400,
                             fontSize: 20,
                             lineHeight: '20px',

@@ -12,6 +12,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-figtree: var(--font-figtree);
 }
 
 @media (prefers-color-scheme: light) {
@@ -24,7 +25,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Figtree', Arial, Helvetica, sans-serif;
+  font-family: var(--font-figtree), 'Figtree', Arial, Helvetica, sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6 {

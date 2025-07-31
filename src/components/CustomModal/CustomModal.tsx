@@ -60,7 +60,7 @@ const CustomModal: React.FC<CustomModalProps> = ({ open, onClose, code, setCode,
             >
                 <Typography
                     sx={{
-                        fontFamily: 'Figtree',
+                        fontFamily: 'var(--font-figtree)',
                         fontWeight: 550,
                         fontSize: { xs: 25, md: 23.31 },
                         lineHeight: '30px',
@@ -116,7 +116,7 @@ const CustomModal: React.FC<CustomModalProps> = ({ open, onClose, code, setCode,
                             background: '#138263',
                             boxShadow: '0px 3.1968px 3.1968px rgba(0, 0, 0, 0.25)',
                             color: '#fff',
-                            fontFamily: 'Figtree',
+                            fontFamily: 'var(--font-figtree)',
                             fontWeight: 700,
                             fontSize: 19.98,
                             textTransform: 'none',

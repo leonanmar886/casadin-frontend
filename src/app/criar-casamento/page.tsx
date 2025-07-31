@@ -1,5 +1,5 @@
 "use client"
-import CardMarriage from '@/components/CardMarriage/CardMarriage';
+import Product from '@/components/Product';
 import Image from 'next/image';
 import { useState, useRef } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -9,12 +9,18 @@ import CountdownTimer from '@/components/CountdownTimer';
 import CustomButton from '@/components/CustomButton/CustomButton';
 import TextField from '@mui/material/TextField';
 import ColorPalette from '@/components/ColorPalette';
+import { weddingService } from '@/services/weddingService';
+import Navbar from '@/components/Navbar';
+import EditablePhoto from '@/components/EditablePhoto';
 
 export default function CriarCasamentoPage() {
   const [nomeNoivo, setNomeNoivo] = useState('Fulano');
   const [nomeNoiva, setNomeNoiva] = useState('Fulana');
   const [dataCasamento, setDataCasamento] = useState('29 de Abril de 2026 às 16h');
   const [textoCasal, setTextoCasal] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum odio sem, in accumsan lacus vestibulum tincidunt. Pellentesque vitae faucibus mauris. Integer elit urna, egestas vel nibh non, tristique egestas diam.');
+  const [localCasamento, setLocalCasamento] = useState('Igreja Nossa Senhora de Fátima - Bairro de Fátima');
+  const [isLoading, setIsLoading] = useState(false);
+  const [footerPhoto, setFooterPhoto] = useState('/casal1.jpg');
   const [nomesPadrinhos, setNomesPadrinhos] = useState([
     'Padrinho 1',
     'Padrinho 2',
@@ -22,7 +28,7 @@ export default function CriarCasamentoPage() {
     'Padrinho 4',
     'Padrinho 5',
   ]);
-  const contagemRef = useRef<HTMLDivElement>(null);
+  const homeRef = useRef<HTMLDivElement>(null);
   const casalRef = useRef<HTMLDivElement>(null);
   const padrinhosRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
@@ -90,7 +96,112 @@ export default function CriarCasamentoPage() {
   // Estado para a cor principal do tema
   const [primaryColor, setPrimaryColor] = useState('#138263');
   // Estado para o código do casamento (inicialmente da primeira cor)
-  const [weddingCode, setWeddingCode] = useState('ROSA123');
+  const [weddingCode] = useState('ROSA123');
+
+  // Dados mock para os produtos da lista de presentes
+  const [produtos, setProdutos] = useState([
+    { id: 1, name: 'Air Fryer', price: 299.90, image: '/airfryer.png' },
+    { id: 2, name: 'Jogo de Panelas', price: 450.00, image: '/airfryer.png' },
+    { id: 3, name: 'Mixer', price: 180.00, image: '/airfryer.png' },
+    { id: 4, name: 'Jogo de Copos', price: 120.00, image: '/airfryer.png' },
+    { id: 5, name: 'Toalhas de Banho', price: 89.90, image: '/airfryer.png' },
+    { id: 6, name: 'Jogo de Lençóis', price: 220.00, image: '/airfryer.png' },
+    { id: 7, name: 'Aspirador de Pó', price: 350.00, image: '/airfryer.png' },
+    { id: 8, name: 'Jogo de Pratos', price: 280.00, image: '/airfryer.png' },
+  ]);
+
+  // Funções para editar produtos
+  const handleProductNameChange = (id: number, newName: string) => {
+    setProdutos(produtos.map(produto => 
+      produto.id === id ? { ...produto, name: newName } : produto
+    ));
+  };
+
+  const handleProductPriceChange = (id: number, newPrice: number) => {
+    setProdutos(produtos.map(produto => 
+      produto.id === id ? { ...produto, price: newPrice } : produto
+    ));
+  };
+
+  const handleProductImageChange = (id: number, newImage: string) => {
+    setProdutos(produtos.map(produto => 
+      produto.id === id ? { ...produto, image: newImage } : produto
+    ));
+  };
+
+  const handleProductDelete = (id: number) => {
+    setProdutos(produtos.filter(produto => produto.id !== id));
+  };
+
+  const adicionarProduto = () => {
+    const novoId = Math.max(...produtos.map(p => p.id)) + 1;
+    const novoProduto = {
+      id: novoId,
+      name: 'Novo Produto',
+      price: 0,
+      image: '/airfryer.png'
+    };
+    setProdutos([...produtos, novoProduto]);
+  };
+
+  // Função para converter data brasileira para formato ISO
+  const brazilianDateToISO = (brazilianDate: string): string => {
+    const months: { [key: string]: number } = {
+      'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3,
+      'maio': 4, 'junho': 5, 'julho': 6, 'agosto': 7,
+      'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11
+    };
+
+    const match = brazilianDate.match(/(\d+)\s+de\s+(\w+)\s+de\s+(\d+)\s+às\s+(\d+)h/);
+
+    if (match) {
+      const [, day, month, year, hour] = match;
+      const monthIndex = months[month.toLowerCase()];
+      if (monthIndex !== undefined) {
+        const date = new Date(parseInt(year), monthIndex, parseInt(day), parseInt(hour), 0, 0);
+        return date.toISOString();
+      }
+    }
+    return new Date().toISOString();
+  };
+
+  // Função para salvar os dados do casamento
+  const handleSaveWedding = async () => {
+    try {
+      setIsLoading(true);
+      
+      const weddingData = {
+        coupleName: `${nomeNoivo} e ${nomeNoiva}`,
+        primaryColor: primaryColor,
+        weddingDate: brazilianDateToISO(dataCasamento),
+        weddingLocation: localCasamento,
+        couplePhotos: [], // Por enquanto vazio, pode ser implementado depois
+        description: textoCasal,
+        godparents: nomesPadrinhos.map((nome, index) => ({
+          name: nome,
+          photo: fotosPadrinhos[index] || null,
+          relationship: `Padrinho ${index + 1}`,
+          description: `Padrinho ${index + 1}`
+        })),
+        gifts: produtos.map(produto => ({
+          name: produto.name,
+          description: produto.name,
+          photo: produto.image,
+          price: produto.price,
+          store: 'Loja Online'
+        })),
+        footerPhoto: footerPhoto
+      };
+
+      await weddingService.createWedding(weddingData);
+      alert('Casamento salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar casamento:', error);
+      alert('Erro ao salvar casamento. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Função para lidar com a seleção de cor da paleta
   const handleColorSelect = (color: string) => {
@@ -98,19 +209,18 @@ export default function CriarCasamentoPage() {
   };
 
   return (
-    <div style={{ background: '#F8F8F8', minHeight: '100vh' }}>
+    <div ref={homeRef} style={{ background: '#F8F8F8', minHeight: '100vh', paddingTop: '66.6px' }}>
       {/* Header */}
-      <header style={{ background: primaryColor, color: '#fff', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 700, fontSize: 24, letterSpacing: 2 }}>CASADIN</span>
-        <nav style={{ display: 'flex', gap: 24 }}>
-          <a style={{ cursor: 'pointer' }} onClick={() => contagemRef.current?.scrollIntoView({ behavior: 'smooth' })}>HOME</a>
-          <a style={{ cursor: 'pointer' }} onClick={() => casalRef.current?.scrollIntoView({ behavior: 'smooth' })}>O CASAL</a>
-          <a style={{ cursor: 'pointer' }} onClick={() => padrinhosRef.current?.scrollIntoView({ behavior: 'smooth' })}>OS PADRINHOS</a>
-          <a style={{ cursor: 'pointer' }} onClick={() => infoRef.current?.scrollIntoView({ behavior: 'smooth' })}>INFORMAÇÕES</a>
-          <a style={{ cursor: 'pointer' }} onClick={() => presentesRef.current?.scrollIntoView({ behavior: 'smooth' })}>LISTA DE PRESENTES</a>
-        </nav>
-        <div style={{ background: '#D9D9D9', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>B</div>
-      </header>
+      <Navbar
+        primaryColor={primaryColor}
+        showScrollNav={true}
+        homeRef={homeRef}
+        casalRef={casalRef}
+        padrinhosRef={padrinhosRef}
+        infoRef={infoRef}
+        presentesRef={presentesRef}
+        showAvatar={false}
+      />
 
       {/* Seção do casal */}
       <section style={{ background: '#fff', padding: 64, textAlign: 'center', position: 'relative' }}>
@@ -202,7 +312,7 @@ export default function CriarCasamentoPage() {
       </section>
 
       {/* Contagem regressiva */}
-      <section ref={contagemRef} style={{ background: primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
+      <section style={{ background: primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
         <CountdownTimer targetDate={dataCasamento} size="large" />
       </section>
 
@@ -284,7 +394,25 @@ export default function CriarCasamentoPage() {
       {/* Informações */}
       <section ref={infoRef} style={{ background: primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>INFORMAÇÕES</h1>
-        <div style={{ fontSize: 18, marginBottom: 8 }}>Igreja Nossa Senhora de Fátima - Bairro de Fátima</div>
+        <div style={{ fontSize: 18, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <input
+            type="text"
+            value={localCasamento}
+            onChange={e => setLocalCasamento(e.target.value)}
+            style={{
+              fontSize: 18,
+              textAlign: 'center',
+              border: 'none',
+              background: 'transparent',
+              outline: 'none',
+              color: '#fff',
+              width: localCasamento.length > 0 ? localCasamento.length * 12 : 300,
+              minWidth: 300,
+              maxWidth: 600
+            }}
+          />
+          <EditIcon sx={{ color: '#fff', fontSize: 18 }} />
+        </div>
         <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
           <Image src="/flores-nova.png" alt="Flores" width={310} height={205} />
         </div>
@@ -296,28 +424,37 @@ export default function CriarCasamentoPage() {
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>LISTA DE PRESENTES</h1>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
           gap: 24,
           justifyContent: 'center',
           marginBottom: 16,
-          maxWidth: 900,
+          maxWidth: 1200,
           marginLeft: 'auto',
           marginRight: 'auto',
         }}>
-          {[...Array(8)].map((_, i) => (
-            <div key={i} style={{ margin: 8 }}>
-              <CardMarriage text="Air Fryer" />
-              <div style={{ fontSize: 14, color: '#555', marginTop: 4 }}>R$ 200,00 / 299,90</div>
+          {produtos.map((produto) => (
+            <div key={produto.id} style={{ margin: 8 }}>
+              <Product
+                id={produto.id}
+                name={produto.name}
+                price={produto.price}
+                image={produto.image}
+                editable={true}
+                showDelete={true}
+                onNameChange={(newName) => handleProductNameChange(produto.id, newName)}
+                onPriceChange={(newPrice) => handleProductPriceChange(produto.id, newPrice)}
+                onImageChange={(newImage) => handleProductImageChange(produto.id, newImage)}
+                onDelete={() => handleProductDelete(produto.id)}
+              />
             </div>
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 8 }}>
-            <div style={{ width: 120, height: 120, borderRadius: 16, background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}>+</div>
-            <div>Adicionar produto</div>
+            <div 
+              style={{ width: 250, height: 280, borderRadius: 16, background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}
+              onClick={adicionarProduto}
+            >+</div>
+            <div style={{ marginTop: 8, color: '#555' }}>Adicionar produto</div>
           </div>
-        </div>
-        {/* Paginação mock */}
-        <div style={{ margin: '16px 0' }}>
-          <span style={{ fontSize: 18, color: '#888' }}>1 ... 5</span>
         </div>
       </section>
 
@@ -325,7 +462,15 @@ export default function CriarCasamentoPage() {
       <section style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>CONTAMOS COM SUA PRESENÇA!</h1>
         <div style={{ margin: '0 auto 16px', maxWidth: 600 }}>
-          <Image src="/casal1.jpg" alt="Casal" width={600} height={200} style={{ borderRadius: 16, objectFit: 'cover' }} />
+          <EditablePhoto
+            src={footerPhoto}
+            alt="Casal"
+            width={600}
+            height={200}
+            style={{ borderRadius: 16, objectFit: 'cover' }}
+            onPhotoChange={setFooterPhoto}
+            editable={true}
+          />
         </div>
         <div style={{ color: '#555', fontSize: 16 }}>Com carinho, {nomeNoivo} & {nomeNoiva}.</div>
       </section>
@@ -339,7 +484,7 @@ export default function CriarCasamentoPage() {
             borderRadius: '27.3px',
             background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
             color: '#0B6D51',
-            fontFamily: 'Figtree',
+                         fontFamily: 'var(--font-figtree)',
             fontWeight: 300,
             fontSize: 28,
             boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
@@ -350,9 +495,10 @@ export default function CriarCasamentoPage() {
               opacity: 0.9,
             },
           }}
-          onClick={() => { }}
+          onClick={handleSaveWedding}
+          disabled={isLoading}
         >
-          Salvar
+          {isLoading ? 'Salvando...' : 'Salvar'}
         </CustomButton>
       </div>
     </div>

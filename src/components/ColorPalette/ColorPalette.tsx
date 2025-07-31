@@ -74,7 +74,7 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({
           height: 56,
           top: -50,
           right: -35,
-          fontFamily: 'Figtree, sans-serif',
+                        fontFamily: 'var(--font-figtree), sans-serif',
           fontStyle: 'normal',
           fontWeight: 500,
           fontSize: 23.31,

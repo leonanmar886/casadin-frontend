@@ -52,7 +52,7 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" sx={{ position: 'relative' }}>
       <Box
         sx={{
           width: 200,
@@ -65,6 +65,7 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
           margin: '0 auto 16px auto',
           cursor: editable ?'pointer': 'default',
           overflow: 'hidden',
+          position: 'relative',
         }}
         onClick={handleClick}
         title={editable ? "Clique para alterar a foto" : ""}
@@ -79,15 +80,42 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
           <PersonIcon sx={{ color: '#e0e0e0', fontSize: 200 * 0.4 }} />
         )}
         {editable && (
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          style={{ display: 'none' }}
-          onChange={handlePhotoChange}
-        />
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handlePhotoChange}
+            />
+          </>
         )}
       </Box>
+      {editable && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -16,
+            right: -16,
+            bgcolor: 'white',
+            borderRadius: '50%',
+            boxShadow: 1,
+            p: 0.5,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2,
+          }}
+          onClick={e => {
+            e.stopPropagation();
+            fileInputRef.current?.click();
+          }}
+          title="Editar foto"
+        >
+          <EditIcon sx={{ color: '#2563eb', fontSize: 22 }} />
+        </Box>
+      )}
       {editable ? (
         // Modo editável: input + ícone de edição + ícone de remoção
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

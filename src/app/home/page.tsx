@@ -1,18 +1,16 @@
 "use client";
-import casadinLogo from "@/assets/casadin-logo.svg";
 import AdornoHome from "@/components/AdornoHome/AdornoHome";
 import CustomButton from "@/components/CustomButton/CustomButton";
 import ProfileMenu from "@/components/ProfileMenu/ProfileMenu";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuthContext } from "@/providers/AuthProvider";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Image from "next/image";
 import React from "react";
 import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
@@ -52,32 +50,17 @@ export default function HomeProtected() {
   return (
     <ProtectedRoute>
       {/* Header */}
-      <Box sx={{
-        width: '100%',
-        height: 66.6,
-        bgcolor: '#138263',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        px: 3,
-        position: 'relative',
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Image src={casadinLogo} alt="CASADIN logo" height={40} style={{ width: 'auto' }} />
-        </Box>
-        <Avatar
-          sx={{ bgcolor: '#D9D9D9', width: 47, height: 47, fontSize: 26, color: '#000', fontFamily: 'Figtree', fontWeight: 400, cursor: 'pointer' }}
-          onClick={handleAvatarClick}
-        >
-          {user?.name?.[0]?.toUpperCase()}
-        </Avatar>
-        <ProfileMenu
-          open={open}
-          onClose={handleClose}
-          user={user}
-          logout={logout}
-        />
-      </Box>
+      <Navbar
+        primaryColor="#138263"
+        userInitial={user?.name?.[0]?.toUpperCase() || 'B'}
+        onAvatarClick={handleAvatarClick}
+      />
+      <ProfileMenu
+        open={open}
+        onClose={handleClose}
+        user={user}
+        logout={logout}
+      />
 
       {/* Conteúdo principal */}
       <Box
@@ -90,6 +73,7 @@ export default function HomeProtected() {
           justifyContent: 'flex-start',
           px: 2,
           position: 'relative',
+          paddingTop: '66.6px',
         }}
       >
         {/* Adorno lateral esquerdo */}
@@ -137,7 +121,7 @@ export default function HomeProtected() {
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Figtree',
+                fontFamily: 'var(--font-figtree)',
                 fontWeight: 600,
                 fontSize: { xs: 28, md: 40 },
                 lineHeight: '48px',
@@ -152,7 +136,7 @@ export default function HomeProtected() {
           {/* Mensagem principal */}
           <Typography
             sx={{
-              fontFamily: 'Figtree',
+              fontFamily: 'var(--font-figtree)',
               fontWeight: 400,
               fontSize: { xs: 18, md: 26.64 },
               lineHeight: '32px',
@@ -172,7 +156,7 @@ export default function HomeProtected() {
               borderRadius: '27.3px',
               background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
               color: '#0B6D51',
-              fontFamily: 'Figtree',
+              fontFamily: 'var(--font-figtree)',
               fontWeight: 300,
               fontSize: 28,
               boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
@@ -206,7 +190,7 @@ export default function HomeProtected() {
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Figtree',
+                fontFamily: 'var(--font-figtree)',
                 fontWeight: 600,
                 fontSize: { xs: 28, md: 40 },
                 lineHeight: '48px',
@@ -226,7 +210,7 @@ export default function HomeProtected() {
                 </svg>
                 <Typography
                   sx={{
-                    fontFamily: 'Figtree',
+                    fontFamily: 'var(--font-figtree)',
                     fontWeight: 400,
                     fontSize: '16.65px',
                     lineHeight: '20px',
@@ -241,7 +225,7 @@ export default function HomeProtected() {
           {/* Mensagem principal */}
           <Typography
             sx={{
-              fontFamily: 'Figtree',
+              fontFamily: 'var(--font-figtree)',
               fontWeight: 400,
               fontSize: { xs: 18, md: 26.64 },
               lineHeight: '32px',
@@ -252,31 +236,31 @@ export default function HomeProtected() {
           >
             Você ainda não possui convites...
           </Typography>
-          <CustomButton
-            sx={{
-              width: 376,
-              maxWidth: '100%',
-              height: 87,
-              borderRadius: '27.3px',
-              background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-              color: '#0B6D51',
-              fontFamily: 'Figtree',
-              fontWeight: 300,
-              fontSize: 28,
-              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
-              textTransform: 'none',
-              mt: 1,
-              ':hover': {
+                      <CustomButton
+              sx={{
+                width: 376,
+                maxWidth: '100%',
+                height: 87,
+                borderRadius: '27.3px',
                 background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                opacity: 0.9,
-              },
-            }}
-            onClick={() => {
-              setCode("");
-              setErrorJoin("");
-              setModalOpen(true);
-            }}
-          >
+                color: '#0B6D51',
+                fontFamily: 'var(--font-figtree)',
+                fontWeight: 300,
+                fontSize: 28,
+                boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+                textTransform: 'none',
+                mt: 1,
+                ':hover': {
+                  background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                  opacity: 0.9,
+                },
+              }}
+              onClick={() => {
+                setCode("");
+                setErrorJoin("");
+                setModalOpen(true);
+              }}
+            >
             Adicionar um casamento
           </CustomButton>
         </Box>
