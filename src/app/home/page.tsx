@@ -6,11 +6,24 @@ import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuthContext } from "@/providers/AuthProvider";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
 import React, { useEffect, useState } from "react";
 import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+
+interface Wedding {
+  id: string;
+  coupleName: string;
+  weddingDate: string;
+  footerPhoto?: string;
+  primaryColor?: string;
+  weddingLocation?: string;
+  description?: string;
+  isCreator?: boolean;
+  role?: 'fiance' | 'guest';
+}
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
@@ -19,21 +32,67 @@ export default function HomeProtected() {
   const [code, setCode] = React.useState("");
   const [loadingJoin, setLoadingJoin] = React.useState(false);
   const [errorJoin, setErrorJoin] = React.useState("");
-  const [myWedding, setMyWedding] = useState<any>(null);
+  const [myWedding, setMyWedding] = useState<Wedding | null>(null);
+  const [myInvitations, setMyInvitations] = useState<Wedding[]>([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
   const router = useRouter();
+
   const handleSubmitCode = async () => {
     setLoadingJoin(true);
     setErrorJoin("");
     try {
-      await weddingService.joinWedding(code);
+      console.log('Tentando entrar no casamento com código:', code);
+      console.log('Token atual:', localStorage.getItem('auth_token'));
+      console.log('Usuário atual:', user);
+      
+      // Por enquanto, vamos navegar diretamente para a página do casamento
+      // sem fazer o join, já que está dando erro 500
       setModalOpen(false);
       setCode("");
-      // Aqui você pode atualizar o estado dos convites/casamentos se necessário
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'status' in err.response && err.response.status === 404) {
-        setErrorJoin("Código não existente");
+      router.push(`/wedding-guest/code/${code}`);
+      
+      // Comentando o join temporariamente devido ao erro 500
+      /*
+      const response = await weddingService.joinWedding(code);
+      console.log('Resposta do joinWedding:', response);
+      
+      // Se o join foi bem-sucedido, navegar para a página do casamento
+      if (response && response.weddingId) {
+        setModalOpen(false);
+        setCode("");
+        router.push(`/wedding-guest/${response.weddingId}`);
       } else {
-        setErrorJoin("Erro ao entrar no casamento");
+        // Se não retornou weddingId, tentar buscar o casamento pelo código
+        setModalOpen(false);
+        setCode("");
+        router.push(`/wedding-guest/code/${code}`);
+      }
+      */
+    } catch (err: unknown) {
+      console.error('Erro detalhado:', err);
+      
+      // Verificar se é um erro de rede ou servidor
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'status' in err.response) {
+        const status = err.response.status;
+        
+        if (status === 404) {
+          setErrorJoin("Código não existente");
+        } else if (status === 400) {
+          setErrorJoin("Código inválido");
+        } else if (status === 409) {
+          setErrorJoin("Você já está convidado para este casamento");
+        } else if (status === 401) {
+          setErrorJoin("Erro de autenticação. Faça login novamente.");
+        } else if (status === 500) {
+          setErrorJoin("Erro interno do servidor. Tente novamente em alguns instantes.");
+        } else {
+          setErrorJoin(`Erro ${status}: Tente novamente.`);
+        }
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        // Erro de rede ou outro tipo
+        setErrorJoin("Erro de conexão. Verifique sua internet e tente novamente.");
+      } else {
+        setErrorJoin("Erro inesperado. Tente novamente.");
       }
     } finally {
       setLoadingJoin(false);
@@ -49,17 +108,58 @@ export default function HomeProtected() {
   const open = Boolean(anchorEl);
 
   useEffect(() => {
-    const fetchMyWedding = async () => {
+    const fetchAllWeddings = async () => {
       try {
-        const data = await weddingService.getMyWeddings();
-        if (data && data.length > 0) {
-          setMyWedding(data[0]); // Supondo que retorna array, pega o primeiro
+        setLoadingInvitations(true);
+        const allWeddings = await weddingService.getAllMyWeddings();
+        console.log('Todos os casamentos carregados:', allWeddings);
+        
+        // Separar casamentos criados vs convites
+        const createdWeddings = allWeddings.filter((wedding: any) => {
+          console.log('Verificando casamento:', wedding.coupleName, wedding);
+          // Verificar se o usuário é criador baseado em diferentes campos possíveis
+          const isCreator = wedding.isCreator === true || 
+                           wedding.role === 'fiance' || 
+                           wedding.userRole === 'fiance' ||
+                           wedding.isOwner === true;
+          console.log('É criador?', isCreator);
+          return isCreator;
+        });
+        
+        const invitations = allWeddings.filter((wedding: any) => {
+          console.log('Verificando convite:', wedding.coupleName, wedding);
+          // Verificar se o usuário é convidado baseado em diferentes campos possíveis
+          const isGuest = wedding.isCreator === false || 
+                         wedding.role === 'guest' || 
+                         wedding.userRole === 'guest' ||
+                         wedding.isOwner === false;
+          console.log('É convidado?', isGuest);
+          return isGuest;
+        });
+        
+        console.log('Casamentos criados:', createdWeddings);
+        console.log('Convites:', invitations);
+        
+        // Definir meu casamento (primeiro criado)
+        if (createdWeddings.length > 0) {
+          setMyWedding(createdWeddings[0]);
+        } else {
+          setMyWedding(null);
         }
-      } catch (e) {
+        
+        // Definir convites
+        setMyInvitations(invitations);
+        
+      } catch (error) {
+        console.error('Erro ao buscar casamentos:', error);
         setMyWedding(null);
+        setMyInvitations([]);
+      } finally {
+        setLoadingInvitations(false);
       }
     };
-    fetchMyWedding();
+
+    fetchAllWeddings();
   }, []);
 
   return (
@@ -259,7 +359,22 @@ export default function HomeProtected() {
               Meus convites
             </Typography>
             {user?.role === 'guest' && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: '6.66px' }}>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6.66px',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
+                }}
+                onClick={() => {
+                  setCode("");
+                  setErrorJoin("");
+                  setModalOpen(true);
+                }}
+              >
                 {/* Ícone placeholder */}
                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="7.5" cy="7.5" r="7" stroke="#138263" strokeWidth="1.3" />
@@ -280,47 +395,228 @@ export default function HomeProtected() {
               </Box>
             )}
           </Box>
-          {/* Mensagem principal */}
-          <Typography
-            sx={{
-              fontFamily: 'var(--font-figtree)',
-              fontWeight: 400,
-              fontSize: { xs: 18, md: 26.64 },
-              lineHeight: '32px',
-              color: '#737373',
-              textAlign: 'center',
-              mb: 4,
-            }}
-          >
-            Você ainda não possui convites...
-          </Typography>
-          <CustomButton
-            sx={{
-              width: 376,
-              maxWidth: '100%',
-              height: 87,
-              borderRadius: '27.3px',
-              background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-              color: '#0B6D51',
-              fontFamily: 'var(--font-figtree)',
-              fontWeight: 300,
-              fontSize: 28,
-              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
-              textTransform: 'none',
-              mt: 1,
-              ':hover': {
-                background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                opacity: 0.9,
-              },
-            }}
-            onClick={() => {
-              setCode("");
-              setErrorJoin("");
-              setModalOpen(true);
-            }}
-          >
-            Adicionar um casamento
-          </CustomButton>
+                    {/* Cards dos convites */}
+          {loadingInvitations ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+              <CircularProgress size={40} sx={{ color: '#138263' }} />
+            </Box>
+          ) : myInvitations.length > 0 ? (
+            <>
+              <Box
+                sx={{
+                  width: '100%',
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                  gap: 3,
+                  mt: 2,
+                }}
+              >
+                {myInvitations.map((wedding, index) => (
+                  <Box
+                    key={wedding.id || index}
+                    sx={{
+                      bgcolor: '#fff',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                      transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.15)',
+                      },
+                    }}
+                    onClick={() => router.push(`/wedding-guest/code/${wedding.id}`)}
+                  >
+                    {/* Imagem do casamento */}
+                    {wedding.footerPhoto ? (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: 200,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <img
+                          src={wedding.footerPhoto}
+                          alt={`${wedding.coupleName}`}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: 200,
+                          bgcolor: wedding.primaryColor || '#138263',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-figtree)',
+                            fontWeight: 600,
+                            fontSize: 24,
+                            color: '#fff',
+                            textAlign: 'center',
+                          }}
+                        >
+                          {wedding.coupleName?.charAt(0) || 'C'}
+                        </Typography>
+                      </Box>
+                    )}
+                    
+                    {/* Informações do casamento */}
+                    <Box sx={{ p: 3 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: 'var(--font-figtree)',
+                          fontWeight: 600,
+                          fontSize: 18,
+                          color: '#333',
+                          mb: 1,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {wedding.coupleName}
+                      </Typography>
+                      
+                      {wedding.weddingDate && (
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-figtree)',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            color: '#666',
+                            textAlign: 'center',
+                            mb: 1,
+                          }}
+                        >
+                          {new Date(wedding.weddingDate).toLocaleDateString('pt-BR')}
+                        </Typography>
+                      )}
+                      
+                      {wedding.weddingLocation && (
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-figtree)',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            color: '#666',
+                            textAlign: 'center',
+                            mb: 2,
+                          }}
+                        >
+                          {wedding.weddingLocation}
+                        </Typography>
+                      )}
+                      
+                      <CustomButton
+                        sx={{
+                          width: '100%',
+                          height: 40,
+                          borderRadius: '20px',
+                          bgcolor: wedding.primaryColor || '#138263',
+                          color: '#fff',
+                          fontFamily: 'var(--font-figtree)',
+                          fontWeight: 500,
+                          fontSize: 14,
+                          textTransform: 'none',
+                          '&:hover': {
+                            bgcolor: wedding.primaryColor ? `${wedding.primaryColor}dd` : '#106b52',
+                          },
+                        }}
+                        onClick={() => {
+                          router.push(`/wedding-guest/code/${wedding.id}`);
+                        }}
+                      >
+                        Ver Casamento
+                      </CustomButton>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+              
+              {/* Botão para adicionar mais casamentos */}
+              <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <CustomButton
+                  sx={{
+                    width: 300,
+                    maxWidth: '100%',
+                    height: 60,
+                    borderRadius: '30px',
+                    background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                    color: '#0B6D51',
+                    fontFamily: 'var(--font-figtree)',
+                    fontWeight: 500,
+                    fontSize: 18,
+                    boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+                    textTransform: 'none',
+                    '&:hover': {
+                      background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                      opacity: 0.9,
+                    },
+                  }}
+                  onClick={() => {
+                    setCode("");
+                    setErrorJoin("");
+                    setModalOpen(true);
+                  }}
+                >
+                  Adicionar Mais Casamentos
+                </CustomButton>
+              </Box>
+            </>
+          ) : (
+            <>
+              <Typography
+                sx={{
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 400,
+                  fontSize: { xs: 18, md: 26.64 },
+                  lineHeight: '32px',
+                  color: '#737373',
+                  textAlign: 'center',
+                  mb: 4,
+                }}
+              >
+                Você ainda não possui convites...
+              </Typography>
+              <CustomButton
+                sx={{
+                  width: 376,
+                  maxWidth: '100%',
+                  height: 87,
+                  borderRadius: '27.3px',
+                  background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                  color: '#0B6D51',
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 300,
+                  fontSize: 28,
+                  boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+                  textTransform: 'none',
+                  mt: 1,
+                  ':hover': {
+                    background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                    opacity: 0.9,
+                  },
+                }}
+                onClick={() => {
+                  setCode("");
+                  setErrorJoin("");
+                  setModalOpen(true);
+                }}
+              >
+                Adicionar um casamento
+              </CustomButton>
+            </>
+          )}
         </Box>
         <CustomModal
           open={modalOpen}
