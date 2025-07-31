@@ -30,19 +30,25 @@ interface WeddingData {
 }
 
 export const weddingService = {
-    joinWedding: async (code: string) => {
-        const response = await api.post('/weddings/join', {
-            invitationCode: code
-        });
-        console.log(response);
+  joinWedding: async (code: string) => {
+    const response = await api.post('/weddings/join', {
+      invitationCode: code
+    });
+    console.log(response);
 
-        return response.data;
-    },
+    return response.data;
+  },
 
-    createWedding: async (weddingData: WeddingData) => {
-        const response = await api.post('/weddings', weddingData);
-        return response.data;
-    },
+  createWedding: async (weddingData: WeddingData) => {
+    console.log('Creating wedding with data:', weddingData);
+    const response = await api.post('/weddings', weddingData);
+    return response.data;
+  },
 
-    getToken: () => localStorage.getItem(TOKEN_KEY),
-}; 
+  getToken: () => localStorage.getItem(TOKEN_KEY),
+
+  getMyWeddings: async () => {
+    const response = await api.get('/weddings/my-weddings');
+    return response.data;
+  },
+};

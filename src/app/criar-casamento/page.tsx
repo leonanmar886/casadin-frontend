@@ -12,6 +12,7 @@ import ColorPalette from '@/components/ColorPalette';
 import { weddingService } from '@/services/weddingService';
 import Navbar from '@/components/Navbar';
 import EditablePhoto from '@/components/EditablePhoto';
+import { useRouter } from 'next/navigation';
 
 export default function CriarCasamentoPage() {
   const [nomeNoivo, setNomeNoivo] = useState('Fulano');
@@ -28,12 +29,14 @@ export default function CriarCasamentoPage() {
     'Padrinho 4',
     'Padrinho 5',
   ]);
+  const [fotosCasal, setFotosCasal] = useState<string[]>(["/casal1.jpg", "/casal2.jpg"]);
   const homeRef = useRef<HTMLDivElement>(null);
   const casalRef = useRef<HTMLDivElement>(null);
   const padrinhosRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
   const presentesRef = useRef<HTMLDivElement>(null);
   const [fotosPadrinhos, setFotosPadrinhos] = useState<(string | null)[]>(Array(nomesPadrinhos.length).fill(null));
+  const router = useRouter();
 
   const adicionarPadrinho = () => {
     const novoNome = `Padrinho ${nomesPadrinhos.length + 1}`;
@@ -112,19 +115,19 @@ export default function CriarCasamentoPage() {
 
   // Funções para editar produtos
   const handleProductNameChange = (id: number, newName: string) => {
-    setProdutos(produtos.map(produto => 
+    setProdutos(produtos.map(produto =>
       produto.id === id ? { ...produto, name: newName } : produto
     ));
   };
 
   const handleProductPriceChange = (id: number, newPrice: number) => {
-    setProdutos(produtos.map(produto => 
+    setProdutos(produtos.map(produto =>
       produto.id === id ? { ...produto, price: newPrice } : produto
     ));
   };
 
   const handleProductImageChange = (id: number, newImage: string) => {
-    setProdutos(produtos.map(produto => 
+    setProdutos(produtos.map(produto =>
       produto.id === id ? { ...produto, image: newImage } : produto
     ));
   };
@@ -169,13 +172,12 @@ export default function CriarCasamentoPage() {
   const handleSaveWedding = async () => {
     try {
       setIsLoading(true);
-      
       const weddingData = {
         coupleName: `${nomeNoivo} e ${nomeNoiva}`,
         primaryColor: primaryColor,
         weddingDate: brazilianDateToISO(dataCasamento),
         weddingLocation: localCasamento,
-        couplePhotos: [], // Por enquanto vazio, pode ser implementado depois
+        couplePhotos: fotosCasal, // <-- agora envia as fotos do casal
         description: textoCasal,
         godparents: nomesPadrinhos.map((nome, index) => ({
           name: nome,
@@ -192,9 +194,8 @@ export default function CriarCasamentoPage() {
         })),
         footerPhoto: footerPhoto
       };
-
       await weddingService.createWedding(weddingData);
-      alert('Casamento salvo com sucesso!');
+      router.push('/'); // Redireciona para a tela inicial
     } catch (error) {
       console.error('Erro ao salvar casamento:', error);
       alert('Erro ao salvar casamento. Tente novamente.');
@@ -319,11 +320,27 @@ export default function CriarCasamentoPage() {
       {/* O Casal */}
       <section ref={casalRef} style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>O CASAL</h1>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 48, marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginTop: 32 }}>
-            <FiancePhoto text={nomeNoivo} />
-            <FiancePhoto text={nomeNoiva} />
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 24 }}>
+          <FiancePhoto
+            text={nomeNoivo}
+            editable={true}
+            initialPhoto={fotosCasal[0]}
+            onPhotoChange={url => {
+              const novas = [...fotosCasal];
+              novas[0] = url;
+              setFotosCasal(novas);
+            }}
+          />
+          <FiancePhoto
+            text={nomeNoiva}
+            editable={true}
+            initialPhoto={fotosCasal[1]}
+            onPhotoChange={url => {
+              const novas = [...fotosCasal];
+              novas[1] = url;
+              setFotosCasal(novas);
+            }}
+          />
         </div>
         <div style={{ maxWidth: 700, margin: '0 auto', color: '#555', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           <textarea
@@ -449,7 +466,7 @@ export default function CriarCasamentoPage() {
             </div>
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 8 }}>
-            <div 
+            <div
               style={{ width: 250, height: 280, borderRadius: 16, background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}
               onClick={adicionarProduto}
             >+</div>
@@ -484,7 +501,7 @@ export default function CriarCasamentoPage() {
             borderRadius: '27.3px',
             background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
             color: '#0B6D51',
-                         fontFamily: 'var(--font-figtree)',
+            fontFamily: 'var(--font-figtree)',
             fontWeight: 300,
             fontSize: 28,
             boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
@@ -503,4 +520,4 @@ export default function CriarCasamentoPage() {
       </div>
     </div>
   );
-} 
+}

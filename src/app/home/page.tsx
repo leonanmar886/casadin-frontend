@@ -6,7 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuthContext } from "@/providers/AuthProvider";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ export default function HomeProtected() {
   const [code, setCode] = React.useState("");
   const [loadingJoin, setLoadingJoin] = React.useState(false);
   const [errorJoin, setErrorJoin] = React.useState("");
+  const [myWedding, setMyWedding] = useState<any>(null);
   const router = useRouter();
   const handleSubmitCode = async () => {
     setLoadingJoin(true);
@@ -46,6 +47,20 @@ export default function HomeProtected() {
     setAnchorEl(null);
   };
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    const fetchMyWedding = async () => {
+      try {
+        const data = await weddingService.getMyWeddings();
+        if (data && data.length > 0) {
+          setMyWedding(data[0]); // Supondo que retorna array, pega o primeiro
+        }
+      } catch (e) {
+        setMyWedding(null);
+      }
+    };
+    fetchMyWedding();
+  }, []);
 
   return (
     <ProtectedRoute>
@@ -133,44 +148,87 @@ export default function HomeProtected() {
             </Typography>
             <Box />
           </Box>
-          {/* Mensagem principal */}
-          <Typography
-            sx={{
-              fontFamily: 'var(--font-figtree)',
-              fontWeight: 400,
-              fontSize: { xs: 18, md: 26.64 },
-              lineHeight: '32px',
-              color: '#737373',
-              textAlign: 'center',
-              mb: 4,
-            }}
-          >
-            Você ainda não possui casamento para chamar de seu...
-          </Typography>
-          {/* Botão Criar casamento */}
-          <CustomButton
-            sx={{
-              width: 376,
-              maxWidth: '100%',
-              height: 87,
-              borderRadius: '27.3px',
-              background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-              color: '#0B6D51',
-              fontFamily: 'var(--font-figtree)',
-              fontWeight: 300,
-              fontSize: 28,
-              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
-              textTransform: 'none',
-              mt: 1,
-              ':hover': {
-                background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                opacity: 0.9,
-              },
-            }}
-            onClick={() => router.push("/criar-casamento")}
-          >
-            Criar meu casamento
-          </CustomButton>
+          {myWedding ? (
+            <Box
+              sx={{
+                position: 'relative',
+                width: 799.2,
+                height: 266.4,
+                maxWidth: '100%',
+                margin: '0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {myWedding.footerPhoto && (
+                <button
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    padding: 0,
+                    background: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '9.99px',
+                    overflow: 'hidden',
+                  }}
+                  onClick={() => router.push("/meu-casamento")}
+                >
+                  <img
+                    src={myWedding.footerPhoto}
+                    alt="Foto do Casamento"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '9.99px',
+                      display: 'block',
+                    }}
+                  />
+                </button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <Typography
+                sx={{
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 400,
+                  fontSize: { xs: 18, md: 26.64 },
+                  lineHeight: '32px',
+                  color: '#737373',
+                  textAlign: 'center',
+                  mb: 4,
+                }}
+              >
+                Você ainda não possui casamento para chamar de seu...
+              </Typography>
+              <CustomButton
+                sx={{
+                  width: 376,
+                  maxWidth: '100%',
+                  height: 87,
+                  borderRadius: '27.3px',
+                  background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                  color: '#0B6D51',
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 300,
+                  fontSize: 28,
+                  boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+                  textTransform: 'none',
+                  mt: 1,
+                  ':hover': {
+                    background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                    opacity: 0.9,
+                  },
+                }}
+                onClick={() => router.push("/criar-casamento")}
+              >
+                Criar meu casamento
+              </CustomButton>
+            </>
+          )}
         </Box>
 
         {/* Seção convites */}
@@ -236,31 +294,31 @@ export default function HomeProtected() {
           >
             Você ainda não possui convites...
           </Typography>
-                      <CustomButton
-              sx={{
-                width: 376,
-                maxWidth: '100%',
-                height: 87,
-                borderRadius: '27.3px',
+          <CustomButton
+            sx={{
+              width: 376,
+              maxWidth: '100%',
+              height: 87,
+              borderRadius: '27.3px',
+              background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+              color: '#0B6D51',
+              fontFamily: 'var(--font-figtree)',
+              fontWeight: 300,
+              fontSize: 28,
+              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+              textTransform: 'none',
+              mt: 1,
+              ':hover': {
                 background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                color: '#0B6D51',
-                fontFamily: 'var(--font-figtree)',
-                fontWeight: 300,
-                fontSize: 28,
-                boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
-                textTransform: 'none',
-                mt: 1,
-                ':hover': {
-                  background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                  opacity: 0.9,
-                },
-              }}
-              onClick={() => {
-                setCode("");
-                setErrorJoin("");
-                setModalOpen(true);
-              }}
-            >
+                opacity: 0.9,
+              },
+            }}
+            onClick={() => {
+              setCode("");
+              setErrorJoin("");
+              setModalOpen(true);
+            }}
+          >
             Adicionar um casamento
           </CustomButton>
         </Box>
@@ -280,4 +338,4 @@ export default function HomeProtected() {
       </Box>
     </ProtectedRoute>
   );
-} 
+}

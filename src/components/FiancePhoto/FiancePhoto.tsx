@@ -10,15 +10,17 @@ interface FiancePhotoProps {
   onPhotoChange?: (photoUrl: string) => void;
   size?: number;
   editable?: boolean;
+  initialPhoto?: string | null; // Adicionada prop para foto inicial
 }
 
-const FiancePhoto: React.FC<FiancePhotoProps> = ({ 
-  text, 
+const FiancePhoto: React.FC<FiancePhotoProps> = ({
+  text,
   onPhotoChange,
   size = 250,
-  editable = true
+  editable = true,
+  initialPhoto = null // Novo parâmetro
 }) => {
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(initialPhoto); // Usa initialPhoto como valor inicial
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

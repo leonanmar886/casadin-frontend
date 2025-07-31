@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://casadin-backend.onrender.com',
+  // baseURL: 'https://casadin-backend.onrender.com',
+  baseURL: 'http://localhost:3001',
   headers: {
     'Content-Type': 'application/json',
   },
