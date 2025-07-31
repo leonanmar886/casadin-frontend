@@ -13,17 +13,20 @@ interface BestManPhotoProps {
   size?: number;
   editable?: boolean;
   showDelete?: boolean;
+  initialPhoto?: string | null; // Adicionado para uso em modo não-editável
 }
 
-const BestManPhoto: React.FC<BestManPhotoProps> = ({ 
-  text, 
+const BestManPhoto: React.FC<BestManPhotoProps> = ({
+  text,
   onPhotoChange,
   onNameChange,
   onDelete,
+  size = 200,
   editable = true,
   showDelete = false,
+  initialPhoto = null,
 }) => {
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(initialPhoto);
   const [name, setName] = useState(text);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,7 +50,7 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
 
   const handleClick = () => {
     if (editable) {
-    fileInputRef.current?.click();
+      fileInputRef.current?.click();
     }
   };
 
@@ -63,7 +66,7 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 16px auto',
-          cursor: editable ?'pointer': 'default',
+          cursor: editable ? 'pointer' : 'default',
           overflow: 'hidden',
           position: 'relative',
         }}
@@ -137,31 +140,31 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
           />
           <EditIcon sx={{ color: '#2563eb', fontSize: 18 }} />
           {showDelete && onDelete && (
-            <DeleteIcon 
-              sx={{ 
-                color: '#dc3545', 
-                fontSize: 18, 
+            <DeleteIcon
+              sx={{
+                color: '#dc3545',
+                fontSize: 18,
                 cursor: 'pointer',
                 '&:hover': {
                   color: '#c82333'
                 }
-              }} 
+              }}
               onClick={onDelete}
             />
           )}
         </Box>
       ) : (
-       // Modo não-editável: apenas texto
-       <Box sx={{ 
-        fontWeight: 500, 
-        fontSize: 16, 
-        textAlign: 'center',
-        color: '#333'
-      }}>
-        {name}
-      </Box>
-    )}
-  </Box>
-);
+        // Modo não-editável: apenas texto
+        <Box sx={{
+          fontWeight: 500,
+          fontSize: 16,
+          textAlign: 'center',
+          color: '#333'
+        }}>
+          {name}
+        </Box>
+      )}
+    </Box>
+  );
 };
 export default BestManPhoto;

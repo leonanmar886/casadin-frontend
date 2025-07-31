@@ -45,6 +45,10 @@ export const weddingService = {
     return response.data;
   },
 
+  updateWedding: async (id: string, body: any) => {
+    return api.patch(`/weddings/${id}`, body);
+  },
+
   getToken: () => localStorage.getItem(TOKEN_KEY),
 
   getMyWeddings: async () => {

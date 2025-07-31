@@ -173,7 +173,7 @@ export default function HomeProtected() {
                     borderRadius: '9.99px',
                     overflow: 'hidden',
                   }}
-                  onClick={() => router.push("/meu-casamento")}
+                  onClick={() => router.push("/my-wedding")}
                 >
                   <img
                     src={myWedding.footerPhoto}
