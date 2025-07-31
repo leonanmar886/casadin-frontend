@@ -1,23 +1,16 @@
 "use client";
-import casadinLogo from "@/assets/casadin-logo.svg";
 import AdornoHome from "@/components/AdornoHome/AdornoHome";
 import CustomButton from "@/components/CustomButton/CustomButton";
 import ProfileMenu from "@/components/ProfileMenu/ProfileMenu";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuthContext } from "@/providers/AuthProvider";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Image from "next/image";
-import React from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-import CloseIcon from "@mui/icons-material/Close";
+import React, { useEffect, useState } from "react";
 import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
@@ -26,6 +19,8 @@ export default function HomeProtected() {
   const [code, setCode] = React.useState("");
   const [loadingJoin, setLoadingJoin] = React.useState(false);
   const [errorJoin, setErrorJoin] = React.useState("");
+  const [myWedding, setMyWedding] = useState<any>(null);
+  const router = useRouter();
   const handleSubmitCode = async () => {
     setLoadingJoin(true);
     setErrorJoin("");
@@ -34,8 +29,8 @@ export default function HomeProtected() {
       setModalOpen(false);
       setCode("");
       // Aqui você pode atualizar o estado dos convites/casamentos se necessário
-    } catch (err: any) {
-      if (err?.response?.status === 404) {
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'status' in err.response && err.response.status === 404) {
         setErrorJoin("Código não existente");
       } else {
         setErrorJoin("Erro ao entrar no casamento");
@@ -53,35 +48,34 @@ export default function HomeProtected() {
   };
   const open = Boolean(anchorEl);
 
+  useEffect(() => {
+    const fetchMyWedding = async () => {
+      try {
+        const data = await weddingService.getMyWeddings();
+        if (data && data.length > 0) {
+          setMyWedding(data[0]); // Supondo que retorna array, pega o primeiro
+        }
+      } catch (e) {
+        setMyWedding(null);
+      }
+    };
+    fetchMyWedding();
+  }, []);
+
   return (
     <ProtectedRoute>
       {/* Header */}
-      <Box sx={{
-        width: '100%',
-        height: 66.6,
-        bgcolor: '#138263',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        px: 3,
-        position: 'relative',
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Image src={casadinLogo} alt="CASADIN logo" height={40} style={{ width: 'auto' }} />
-        </Box>
-        <Avatar
-          sx={{ bgcolor: '#D9D9D9', width: 47, height: 47, fontSize: 26, color: '#000', fontFamily: 'Figtree', fontWeight: 400, cursor: 'pointer' }}
-          onClick={handleAvatarClick}
-        >
-          {user?.name?.[0]?.toUpperCase()}
-        </Avatar>
-        <ProfileMenu
-          open={open}
-          onClose={handleClose}
-          user={user}
-          logout={logout}
-        />
-      </Box>
+      <Navbar
+        primaryColor="#138263"
+        userInitial={user?.name?.[0]?.toUpperCase() || 'B'}
+        onAvatarClick={handleAvatarClick}
+      />
+      <ProfileMenu
+        open={open}
+        onClose={handleClose}
+        user={user}
+        logout={logout}
+      />
 
       {/* Conteúdo principal */}
       <Box
@@ -94,6 +88,7 @@ export default function HomeProtected() {
           justifyContent: 'flex-start',
           px: 2,
           position: 'relative',
+          paddingTop: '66.6px',
         }}
       >
         {/* Adorno lateral esquerdo */}
@@ -141,7 +136,7 @@ export default function HomeProtected() {
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Figtree',
+                fontFamily: 'var(--font-figtree)',
                 fontWeight: 600,
                 fontSize: { xs: 28, md: 40 },
                 lineHeight: '48px',
@@ -153,43 +148,87 @@ export default function HomeProtected() {
             </Typography>
             <Box />
           </Box>
-          {/* Mensagem principal */}
-          <Typography
-            sx={{
-              fontFamily: 'Figtree',
-              fontWeight: 400,
-              fontSize: { xs: 18, md: 26.64 },
-              lineHeight: '32px',
-              color: '#737373',
-              textAlign: 'center',
-              mb: 4,
-            }}
-          >
-            Você ainda não possui casamento para chamar de seu...
-          </Typography>
-          {/* Botão Criar casamento */}
-          <CustomButton
-            sx={{
-              width: 376,
-              maxWidth: '100%',
-              height: 87,
-              borderRadius: '27.3px',
-              background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-              color: '#0B6D51',
-              fontFamily: 'Figtree',
-              fontWeight: 300,
-              fontSize: 28,
-              boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
-              textTransform: 'none',
-              mt: 1,
-              ':hover': {
-                background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
-                opacity: 0.9,
-              },
-            }}
-          >
-            Criar meu casamento
-          </CustomButton>
+          {myWedding ? (
+            <Box
+              sx={{
+                position: 'relative',
+                width: 799.2,
+                height: 266.4,
+                maxWidth: '100%',
+                margin: '0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {myWedding.footerPhoto && (
+                <button
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    padding: 0,
+                    background: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '9.99px',
+                    overflow: 'hidden',
+                  }}
+                  onClick={() => router.push("/my-wedding")}
+                >
+                  <img
+                    src={myWedding.footerPhoto}
+                    alt="Foto do Casamento"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '9.99px',
+                      display: 'block',
+                    }}
+                  />
+                </button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <Typography
+                sx={{
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 400,
+                  fontSize: { xs: 18, md: 26.64 },
+                  lineHeight: '32px',
+                  color: '#737373',
+                  textAlign: 'center',
+                  mb: 4,
+                }}
+              >
+                Você ainda não possui casamento para chamar de seu...
+              </Typography>
+              <CustomButton
+                sx={{
+                  width: 376,
+                  maxWidth: '100%',
+                  height: 87,
+                  borderRadius: '27.3px',
+                  background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                  color: '#0B6D51',
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 300,
+                  fontSize: 28,
+                  boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
+                  textTransform: 'none',
+                  mt: 1,
+                  ':hover': {
+                    background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                    opacity: 0.9,
+                  },
+                }}
+                onClick={() => router.push("/criar-casamento")}
+              >
+                Criar meu casamento
+              </CustomButton>
+            </>
+          )}
         </Box>
 
         {/* Seção convites */}
@@ -209,7 +248,7 @@ export default function HomeProtected() {
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Figtree',
+                fontFamily: 'var(--font-figtree)',
                 fontWeight: 600,
                 fontSize: { xs: 28, md: 40 },
                 lineHeight: '48px',
@@ -229,7 +268,7 @@ export default function HomeProtected() {
                 </svg>
                 <Typography
                   sx={{
-                    fontFamily: 'Figtree',
+                    fontFamily: 'var(--font-figtree)',
                     fontWeight: 400,
                     fontSize: '16.65px',
                     lineHeight: '20px',
@@ -244,7 +283,7 @@ export default function HomeProtected() {
           {/* Mensagem principal */}
           <Typography
             sx={{
-              fontFamily: 'Figtree',
+              fontFamily: 'var(--font-figtree)',
               fontWeight: 400,
               fontSize: { xs: 18, md: 26.64 },
               lineHeight: '32px',
@@ -263,7 +302,7 @@ export default function HomeProtected() {
               borderRadius: '27.3px',
               background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
               color: '#0B6D51',
-              fontFamily: 'Figtree',
+              fontFamily: 'var(--font-figtree)',
               fontWeight: 300,
               fontSize: 28,
               boxShadow: '0px 2.664px 2.664px rgba(0, 0, 0, 0.15)',
@@ -299,4 +338,4 @@ export default function HomeProtected() {
       </Box>
     </ProtectedRoute>
   );
-} 
+}
