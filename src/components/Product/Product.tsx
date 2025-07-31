@@ -1,93 +1,156 @@
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import Typography from '@mui/material/Typography';
-import { StaticImageData } from 'next/image';
-import React from 'react';
+import { Payment } from '@mui/icons-material';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardMedia,
+    Chip,
+    TextField,
+    Typography
+} from '@mui/material';
+import React, { useState } from 'react';
+import { useAuth } from '../../hook/useAuth';
+import { PaymentModal } from '../PaymentModal/PaymentModal';
 
 interface ProductProps {
   id: number;
   name: string;
+  description: string;
   price: number;
-  image: string | StaticImageData;
+  image: string;
+  onPaymentSuccess?: () => void;
 }
 
-const Product: React.FC<ProductProps> = ({
+export const Product: React.FC<ProductProps> = ({
   id,
   name,
+  description,
   price,
   image,
+  onPaymentSuccess
 }) => {
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [customAmount, setCustomAmount] = useState<number>(price);
+  const { user } = useAuth();
+
+  const handlePaymentClick = () => {
+    if (!user) {
+      alert('Você precisa estar logado para fazer um pagamento');
+      return;
+    }
+    setShowPaymentModal(true);
   };
 
-  const getImageSrc = (image: string | StaticImageData): string => {
-    return typeof image === 'string' ? image : image.src;
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
+    if (onPaymentSuccess) {
+      onPaymentSuccess();
+    }
+    alert('Pagamento realizado com sucesso! Obrigado pela contribuição.');
+  };
+
+  const handlePaymentError = (message: string) => {
+    console.error('Erro no pagamento:', message);
+    // Você pode implementar uma notificação mais elegante aqui
+  };
+
+  const handleCloseModal = () => {
+    setShowPaymentModal(false);
   };
 
   return (
-    <Card
-      sx={{
-        bgcolor: '#fff',
-        borderRadius: 2,
-        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-        maxWidth: 250,
-        margin: '0 auto',
-        transition: '0.2s',
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
-        },
-      }}
-    >
-      <CardMedia
-        component="img"
-        image={getImageSrc(image)}
-        alt={name}
+    <>
+      <Card
         sx={{
-          width: '100%',
-          height: 280,
-          objectFit: 'cover',
-          transition: 'transform 0.2s',
+          maxWidth: 350,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
           '&:hover': {
-            transform: 'scale(1.05)',
-          },
+            transform: 'translateY(-8px)',
+            boxShadow: 8
+          }
         }}
+      >
+        <CardMedia
+          component="img"
+          height="200"
+          image={image}
+          alt={name}
+          sx={{
+            objectFit: 'cover',
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.05)'
+            }
+          }}
+        />
+        
+        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="h6" component="h3" gutterBottom align="center" sx={{ fontWeight: 600 }}>
+            {name}
+          </Typography>
+          
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2, flexGrow: 1 }}>
+            {description}
+          </Typography>
+          
+          <Box sx={{ mb: 2, textAlign: 'center' }}>
+            <Chip
+              label={`R$ ${price.toFixed(2)}`}
+              color="primary"
+              variant="outlined"
+              size="large"
+              sx={{ fontSize: '1.1rem', fontWeight: 600 }}
+            />
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Valor personalizado (opcional)"
+              type="number"
+              value={customAmount}
+              onChange={(e) => setCustomAmount(Number(e.target.value))}
+              fullWidth
+              size="small"
+              inputProps={{
+                min: 1,
+                step: 0.01
+              }}
+            />
+          </Box>
+
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Payment />}
+            onClick={handlePaymentClick}
+            fullWidth
+            size="large"
+            sx={{
+              mt: 'auto',
+              background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #1565c0, #1976d2)'
+              }
+            }}
+          >
+            Contribuir com Presente
+          </Button>
+        </CardContent>
+      </Card>
+
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={handleCloseModal}
+        giftId={id}
+        amount={customAmount}
+        payerEmail={user?.email || ''}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
       />
-      <CardContent sx={{ p: 2 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontFamily: 'Figtree, sans-serif',
-            color: '#333',
-            textAlign: 'center',
-            overflow: 'hidden',
-            fontSize: '1.2rem',
-            mb: 1,
-            lineHeight: 1.4,
-          }}
-        >
-          {name}
-        </Typography>
-        <Typography
-          sx={{
-            fontFamily: 'Figtree, sans-serif',
-            fontWeight: 700,
-            color: 'black',
-            textAlign: 'center',
-            fontSize: '1rem',
-            mb: 2,
-          }}
-        >
-          {formatPrice(price)}
-        </Typography>
-      </CardContent>
-    </Card>
+    </>
   );
 };
-
-export default Product;
