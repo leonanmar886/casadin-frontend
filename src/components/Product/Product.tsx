@@ -12,6 +12,11 @@ import {
 import React, { useState } from 'react';
 import { useAuth } from '../../hook/useAuth';
 import { PaymentModal } from '../PaymentModal/PaymentModal';
+import EditIcon from '@mui/icons-material/Edit';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Box from '@mui/material/Box';
 
 interface ProductProps {
   id: number;
@@ -20,6 +25,12 @@ interface ProductProps {
   price: number;
   image: string;
   onPaymentSuccess?: () => void;
+  editable?: boolean;
+  showDelete?: boolean;
+  onNameChange?: (newName: string) => void;
+  onPriceChange?: (newPrice: number) => void;
+  onImageChange?: (newImage: string) => void;
+  onDelete?: () => void;
 }
 
 export const Product: React.FC<ProductProps> = ({
@@ -28,6 +39,12 @@ export const Product: React.FC<ProductProps> = ({
   description,
   price,
   image,
+  editable = false,
+  showDelete = false,
+  onNameChange,
+  onPriceChange,
+  onImageChange,
+  onDelete,
   onPaymentSuccess
 }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -100,7 +117,7 @@ export const Product: React.FC<ProductProps> = ({
           <Box sx={{ mb: 2, textAlign: 'center' }}>
             <Chip
               label={`R$ ${price.toFixed(2)}`}
-              color="primary"
+              color="primary" 
               variant="outlined"
               size="large"
               sx={{ fontSize: '1.1rem', fontWeight: 600 }}
