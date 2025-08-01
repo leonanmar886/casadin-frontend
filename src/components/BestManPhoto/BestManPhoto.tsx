@@ -1,9 +1,10 @@
 // src/app/components/BestManPhoto.tsx
-import Box from '@mui/material/Box';
-import PersonIcon from '@mui/icons-material/Person';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import React, { useRef, useState } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface BestManPhotoProps {
   text: string;
@@ -14,6 +15,7 @@ interface BestManPhotoProps {
   editable?: boolean;
   showDelete?: boolean;
   initialPhoto?: string | null; // Adicionado para uso em modo não-editável
+  index?: number; // Adicionado para key única
 }
 
 const BestManPhoto: React.FC<BestManPhotoProps> = ({
@@ -25,10 +27,16 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
   editable = true,
   showDelete = false,
   initialPhoto = null,
+  index = 0,
 }) => {
   const [photo, setPhoto] = useState<string | null>(initialPhoto);
   const [name, setName] = useState(text);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sincronizar o estado interno com as props
+  useEffect(() => {
+    setPhoto(initialPhoto);
+  }, [initialPhoto]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -80,7 +88,30 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <PersonIcon sx={{ color: '#e0e0e0', fontSize: 200 * 0.4 }} />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#e0e0e0',
+              textAlign: 'center',
+              p: 1,
+            }}
+          >
+            <PersonIcon sx={{ fontSize: 32, mb: 0.5 }} />
+            <Typography
+              sx={{
+                fontSize: 10,
+                fontWeight: 400,
+                color: '#999',
+                textAlign: 'center',
+                lineHeight: 1.2,
+              }}
+            >
+              Adicionar foto
+            </Typography>
+          </Box>
         )}
         {editable && (
           <>
@@ -126,6 +157,7 @@ const BestManPhoto: React.FC<BestManPhotoProps> = ({
             type="text"
             value={name}
             onChange={handleNameChange}
+            key={`name-input-${index}`}
             style={{
               fontWeight: 500,
               fontSize: 16,

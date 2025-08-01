@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 segundos
 });
 
 // Interceptor para adicionar token automaticamente
@@ -14,6 +15,13 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Configuração específica para uploads de arquivo
+    if (config.data instanceof FormData) {
+      // Remover Content-Type para que o browser defina automaticamente com boundary
+      delete config.headers['Content-Type'];
+    }
+    
     return config;
   },
   (error) => {
@@ -31,7 +39,9 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       // Redirecionar para login se necessário
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 0);
       }
     }
     return Promise.reject(error);

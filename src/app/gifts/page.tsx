@@ -86,12 +86,7 @@ export default function GiftsPage() {
   };
 
   const handlePaymentError = (message: string) => {
-    console.error('Erro no pagamento:', message);
-    setNotification({
-      open: true,
-      message: `Erro no pagamento: ${message}`,
-      severity: 'error'
-    });
+    // Erro no pagamento
   };
 
   const handleCloseModal = () => {

@@ -1,16 +1,59 @@
 "use client";
 import AdornoHome from "@/components/AdornoHome/AdornoHome";
 import CustomButton from "@/components/CustomButton/CustomButton";
+import CustomModal from "@/components/CustomModal/CustomModal";
+import Navbar from "@/components/Navbar";
 import ProfileMenu from "@/components/ProfileMenu/ProfileMenu";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuthContext } from "@/providers/AuthProvider";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import React, { useEffect, useState } from "react";
-import CustomModal from "@/components/CustomModal/CustomModal";
 import { weddingService } from "@/services/weddingService";
+import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
+import Box from "@mui/material/Box";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import React, { useEffect, useState } from "react";
+
+interface Wedding {
+  id: number;
+  coupleName: string;
+  primaryColor: string;
+  weddingDate: string;
+  weddingLocation: string;
+  couplePhotos: string[];
+  description: string;
+  footerPhoto?: string;
+  isActive: boolean;
+  godparents?: Array<{
+    id: number;
+    name: string;
+    photo?: string;
+    relationship: string;
+    description: string;
+    isActive: boolean;
+  }>;
+  gifts?: Array<{
+    id: number;
+    name: string;
+    description: string;
+    photo: string;
+    price: string;
+    store: string;
+    amountPaid: string;
+    amountRemaining: string;
+    isFullyPaid: boolean;
+    paymentStatus: string;
+    isActive: boolean;
+  }>;
+  invitationCode?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function HomeProtected() {
   const { logout, user } = useAuthContext();
@@ -19,7 +62,11 @@ export default function HomeProtected() {
   const [code, setCode] = React.useState("");
   const [loadingJoin, setLoadingJoin] = React.useState(false);
   const [errorJoin, setErrorJoin] = React.useState("");
-  const [myWedding, setMyWedding] = useState<any>(null);
+  const [myWedding, setMyWedding] = useState<Wedding | null>(null);
+  const [loadingWedding, setLoadingWedding] = useState(true);
+  const [deletingWedding, setDeletingWedding] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [weddingToDelete, setWeddingToDelete] = useState<number | null>(null);
   const router = useRouter();
   const handleSubmitCode = async () => {
     setLoadingJoin(true);
@@ -48,15 +95,55 @@ export default function HomeProtected() {
   };
   const open = Boolean(anchorEl);
 
+  const handleDeleteWedding = async (e: React.MouseEvent, weddingId: number) => {
+    e.stopPropagation(); // Previne que o clique propague para o botão do casamento
+    setWeddingToDelete(weddingId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!weddingToDelete) return;
+    
+    setDeletingWedding(true);
+    try {
+      await weddingService.deleteWedding(weddingToDelete);
+      setMyWedding(null); // Remove o casamento do estado
+      setShowDeleteConfirm(false);
+      setWeddingToDelete(null);
+    } catch (error) {
+      // Erro ao excluir casamento
+    } finally {
+      setDeletingWedding(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setWeddingToDelete(null);
+  };
+
   useEffect(() => {
     const fetchMyWedding = async () => {
+      setLoadingWedding(true);
       try {
         const data = await weddingService.getMyWeddings();
-        if (data && data.length > 0) {
-          setMyWedding(data[0]); // Supondo que retorna array, pega o primeiro
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+          // Filtrar apenas casamentos ativos (isActive: true)
+          const activeWeddings = data.filter((wedding: Wedding) => wedding.isActive === true);
+          
+          if (activeWeddings.length > 0) {
+            setMyWedding(activeWeddings[0]); // Pega o primeiro casamento ativo
+          } else {
+            setMyWedding(null);
+          }
+        } else {
+          setMyWedding(null);
         }
       } catch (e) {
-        setMyWedding(null);
+        // Erro ao buscar casamentos
+      } finally {
+        setLoadingWedding(false);
       }
     };
     fetchMyWedding();
@@ -148,7 +235,28 @@ export default function HomeProtected() {
             </Typography>
             <Box />
           </Box>
-          {myWedding ? (
+          {loadingWedding ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: 266.4,
+                width: '100%',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontFamily: 'var(--font-figtree)',
+                  fontWeight: 400,
+                  fontSize: { xs: 18, md: 26.64 },
+                  color: '#737373',
+                }}
+              >
+                Carregando...
+              </Typography>
+            </Box>
+          ) : myWedding ? (
             <Box
               sx={{
                 position: 'relative',
@@ -161,7 +269,73 @@ export default function HomeProtected() {
                 justifyContent: 'center',
               }}
             >
-              {myWedding.footerPhoto && (
+              {/* Ícones de ação */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  zIndex: 10,
+                  display: 'flex',
+                  gap: 1,
+                }}
+              >
+                {/* Botão de editar */}
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/editar-casamento/${myWedding.id}`);
+                  }}
+                  sx={{
+                    bgcolor: 'rgba(0, 0, 0, 0.6)',
+                    color: 'white',
+                    '&:hover': {
+                      bgcolor: 'rgba(0, 0, 0, 0.8)',
+                    },
+                  }}
+                  title="Editar casamento"
+                >
+                  <EditIcon />
+                </IconButton>
+
+                {/* Botão de exclusão */}
+                <IconButton
+                  onClick={(e) => handleDeleteWedding(e, myWedding.id)}
+                  disabled={deletingWedding}
+                  sx={{
+                    bgcolor: 'rgba(0, 0, 0, 0.6)',
+                    color: 'white',
+                    '&:hover': {
+                      bgcolor: 'rgba(0, 0, 0, 0.8)',
+                    },
+                    '&:disabled': {
+                      bgcolor: 'rgba(0, 0, 0, 0.4)',
+                    },
+                  }}
+                  title="Excluir casamento"
+                >
+                  {deletingWedding ? (
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        border: '2px solid white',
+                        borderTop: '2px solid transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        '@keyframes spin': {
+                          '0%': { transform: 'rotate(0deg)' },
+                          '100%': { transform: 'rotate(360deg)' },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <CloseIcon />
+                  )}
+                </IconButton>
+              </Box>
+
+              {myWedding.footerPhoto ? (
                 <button
                   style={{
                     width: '100%',
@@ -186,6 +360,34 @@ export default function HomeProtected() {
                       display: 'block',
                     }}
                   />
+                </button>
+              ) : (
+                <button
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    padding: 20,
+                    background: 'linear-gradient(180deg, #CDF5EA 0%, #FFFFFF 44.23%)',
+                    cursor: 'pointer',
+                    borderRadius: '9.99px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onClick={() => router.push("/my-wedding")}
+                >
+                  <Typography
+                    sx={{
+                      fontFamily: 'var(--font-figtree)',
+                      fontWeight: 600,
+                      fontSize: { xs: 18, md: 24 },
+                      color: '#0B6D51',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {myWedding.coupleName || 'Meu Casamento'}
+                  </Typography>
                 </button>
               )}
             </Box>
@@ -335,6 +537,75 @@ export default function HomeProtected() {
           loading={loadingJoin}
           error={errorJoin}
         />
+
+        {/* Modal de confirmação de exclusão */}
+        <Dialog
+          open={showDeleteConfirm}
+          onClose={cancelDelete}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '7.992px',
+              boxShadow: '6.66px 6.66px 13.32px rgba(0, 0, 0, 0.25)',
+              p: { xs: 1, md: 2 },
+              bgcolor: '#fff',
+            },
+          }}
+        >
+          <DialogTitle sx={{ textAlign: 'center', pb: 2 }}>
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-figtree)',
+                fontWeight: 600,
+                fontSize: { xs: 20, md: 24 },
+                color: '#2B2B2B',
+              }}
+            >
+              Confirmar exclusão
+            </Typography>
+          </DialogTitle>
+          <DialogContent sx={{ textAlign: 'center', pb: 3 }}>
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-figtree)',
+                fontWeight: 400,
+                fontSize: { xs: 16, md: 18 },
+                color: '#666',
+                lineHeight: 1.5,
+              }}
+            >
+              Tem certeza que deseja excluir este casamento? Esta ação não pode ser desfeita.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', gap: 2, pb: 3 }}>
+            <CustomButton
+              onClick={cancelDelete}
+              disabled={deletingWedding}
+              sx={{
+                bgcolor: '#f5f5f5',
+                color: '#666',
+                '&:hover': { bgcolor: '#e0e0e0' },
+                minWidth: 120,
+              }}
+            >
+              Cancelar
+            </CustomButton>
+            <CustomButton
+              onClick={confirmDelete}
+              disabled={deletingWedding}
+              sx={{
+                bgcolor: '#dc3545',
+                color: 'white',
+                '&:hover': { bgcolor: '#c82333' },
+                '&:disabled': { bgcolor: '#dc3545', opacity: 0.6 },
+                minWidth: 120,
+              }}
+            >
+              {deletingWedding ? 'Excluindo...' : 'Excluir'}
+            </CustomButton>
+          </DialogActions>
+        </Dialog>
       </Box>
     </ProtectedRoute>
   );

@@ -58,13 +58,19 @@ export default function MyWeddingPage() {
         setError(null);
         const data = await weddingService.getMyWeddings();
         if (data && data.length > 0) {
-          setWedding(data[0]);
+          // Filtrar apenas casamentos ativos (isActive: true)
+          const activeWeddings = data.filter((wedding: any) => wedding.isActive === true);
+          
+          if (activeWeddings.length > 0) {
+            setWedding(activeWeddings[0]); // Pega o primeiro casamento ativo
+          } else {
+            setError("Nenhum casamento ativo encontrado.");
+          }
         } else {
           setError("Nenhum casamento encontrado.");
         }
       } catch (err) {
-        console.error("Erro ao carregar casamento:", err);
-        setError("Erro ao carregar dados do casamento.");
+        // Erro ao carregar casamento
       } finally {
         setLoading(false);
       }
@@ -292,9 +298,6 @@ export default function MyWeddingPage() {
       {/* Lista de Presentes */}
       <Box ref={presentesRef} sx={{ background: '#fff', py: 4, textAlign: 'center' }}>
         <Container maxWidth="lg">
-          <Typography variant="h3" component="h2" sx={{ fontWeight: 600, mb: 3 }}>
-            LISTA DE PRESENTES
-          </Typography>
           
           <Grid 
             container 

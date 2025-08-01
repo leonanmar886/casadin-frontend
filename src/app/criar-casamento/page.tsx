@@ -1,18 +1,29 @@
 "use client"
-import Product from '@/components/Product';
-import Image from 'next/image';
-import { useState, useRef } from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import FiancePhoto from '@/components/FiancePhoto/FiancePhoto';
 import BestManPhoto from '@/components/BestManPhoto/BestManPhoto';
+import ColorPalette from '@/components/ColorPalette';
 import CountdownTimer from '@/components/CountdownTimer';
 import CustomButton from '@/components/CustomButton/CustomButton';
-import TextField from '@mui/material/TextField';
-import ColorPalette from '@/components/ColorPalette';
-import { weddingService } from '@/services/weddingService';
-import Navbar from '@/components/Navbar';
 import EditablePhoto from '@/components/EditablePhoto';
+import FiancePhoto from '@/components/FiancePhoto/FiancePhoto';
+import GiftManager from '@/components/GiftManager';
+import Navbar from '@/components/Navbar';
+import { Product } from '@/components/Product';
+import { weddingService } from '@/services/weddingService';
+import { base64ToFile, blobUrlToBase64, isBase64Image, localUrlToBase64, shouldUploadImage } from '@/utils/imageUtils';
+import EditIcon from '@mui/icons-material/Edit';
+import TextField from '@mui/material/TextField';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  description?: string;
+  store?: string;
+}
 
 export default function CriarCasamentoPage() {
   const [nomeNoivo, setNomeNoivo] = useState('Fulano');
@@ -21,15 +32,12 @@ export default function CriarCasamentoPage() {
   const [textoCasal, setTextoCasal] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum odio sem, in accumsan lacus vestibulum tincidunt. Pellentesque vitae faucibus mauris. Integer elit urna, egestas vel nibh non, tristique egestas diam.');
   const [localCasamento, setLocalCasamento] = useState('Igreja Nossa Senhora de Fátima - Bairro de Fátima');
   const [isLoading, setIsLoading] = useState(false);
-  const [footerPhoto, setFooterPhoto] = useState('/casal1.jpg');
-  const [nomesPadrinhos, setNomesPadrinhos] = useState([
-    'Padrinho 1',
-    'Padrinho 2',
-    'Padrinho 3',
-    'Padrinho 4',
-    'Padrinho 5',
+  const [footerPhoto, setFooterPhoto] = useState('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+  const [nomesPadrinhos, setNomesPadrinhos] = useState<string[]>([]);
+  const [fotosCasal, setFotosCasal] = useState<string[]>([
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
   ]);
-  const [fotosCasal, setFotosCasal] = useState<string[]>(["/casal1.jpg", "/casal2.jpg"]);
   const homeRef = useRef<HTMLDivElement>(null);
   const casalRef = useRef<HTMLDivElement>(null);
   const padrinhosRef = useRef<HTMLDivElement>(null);
@@ -38,9 +46,34 @@ export default function CriarCasamentoPage() {
   const [fotosPadrinhos, setFotosPadrinhos] = useState<(string | null)[]>(Array(nomesPadrinhos.length).fill(null));
   const router = useRouter();
 
+  // Verificar duplicações nos padrinhos
+  useEffect(() => {
+    const uniqueNomesPadrinhos = nomesPadrinhos.filter((nome, index, self) => 
+      index === self.findIndex(n => n === nome)
+    );
+    
+    if (uniqueNomesPadrinhos.length !== nomesPadrinhos.length) {
+      setNomesPadrinhos(uniqueNomesPadrinhos);
+      // Manter as fotos correspondentes aos nomes únicos
+      const uniqueFotos = uniqueNomesPadrinhos.map((nome) => {
+        const originalIndex = nomesPadrinhos.indexOf(nome);
+        return fotosPadrinhos[originalIndex];
+      });
+      setFotosPadrinhos(uniqueFotos);
+    }
+  }, [nomesPadrinhos, fotosPadrinhos]);
+
   const adicionarPadrinho = () => {
+    // Verificar se já existe um padrinho com o mesmo nome para evitar duplicações
     const novoNome = `Padrinho ${nomesPadrinhos.length + 1}`;
-    setNomesPadrinhos([...nomesPadrinhos, novoNome]);
+    const existingPadrinho = nomesPadrinhos.find(nome => nome === novoNome);
+    
+    if (existingPadrinho) {
+      const uniqueName = `Padrinho ${Date.now()}`;
+      setNomesPadrinhos([...nomesPadrinhos, uniqueName]);
+    } else {
+      setNomesPadrinhos([...nomesPadrinhos, novoNome]);
+    }
     setFotosPadrinhos([...fotosPadrinhos, null]);
   };
 
@@ -102,50 +135,9 @@ export default function CriarCasamentoPage() {
   const [weddingCode] = useState('ROSA123');
 
   // Dados mock para os produtos da lista de presentes
-  const [produtos, setProdutos] = useState([
-    { id: 1, name: 'Air Fryer', price: 299.90, image: '/airfryer.png' },
-    { id: 2, name: 'Jogo de Panelas', price: 450.00, image: '/airfryer.png' },
-    { id: 3, name: 'Mixer', price: 180.00, image: '/airfryer.png' },
-    { id: 4, name: 'Jogo de Copos', price: 120.00, image: '/airfryer.png' },
-    { id: 5, name: 'Toalhas de Banho', price: 89.90, image: '/airfryer.png' },
-    { id: 6, name: 'Jogo de Lençóis', price: 220.00, image: '/airfryer.png' },
-    { id: 7, name: 'Aspirador de Pó', price: 350.00, image: '/airfryer.png' },
-    { id: 8, name: 'Jogo de Pratos', price: 280.00, image: '/airfryer.png' },
+  const [produtos, setProdutos] = useState<Product[]>([
+    // Array vazio - sem dados mocados
   ]);
-
-  // Funções para editar produtos
-  const handleProductNameChange = (id: number, newName: string) => {
-    setProdutos(produtos.map(produto =>
-      produto.id === id ? { ...produto, name: newName } : produto
-    ));
-  };
-
-  const handleProductPriceChange = (id: number, newPrice: number) => {
-    setProdutos(produtos.map(produto =>
-      produto.id === id ? { ...produto, price: newPrice } : produto
-    ));
-  };
-
-  const handleProductImageChange = (id: number, newImage: string) => {
-    setProdutos(produtos.map(produto =>
-      produto.id === id ? { ...produto, image: newImage } : produto
-    ));
-  };
-
-  const handleProductDelete = (id: number) => {
-    setProdutos(produtos.filter(produto => produto.id !== id));
-  };
-
-  const adicionarProduto = () => {
-    const novoId = Math.max(...produtos.map(p => p.id)) + 1;
-    const novoProduto = {
-      id: novoId,
-      name: 'Novo Produto',
-      price: 0,
-      image: '/airfryer.png'
-    };
-    setProdutos([...produtos, novoProduto]);
-  };
 
   // Função para converter data brasileira para formato ISO
   const brazilianDateToISO = (brazilianDate: string): string => {
@@ -172,32 +164,164 @@ export default function CriarCasamentoPage() {
   const handleSaveWedding = async () => {
     try {
       setIsLoading(true);
+      
+      // Função auxiliar para processar imagem
+      const processImage = async (imageUrl: string, filename: string, uploadFunction: (file: File) => Promise<string>) => {
+        
+        if (!shouldUploadImage(imageUrl)) {
+          return imageUrl;
+        }
+        
+        try {
+          let base64: string;
+          
+          if (imageUrl.startsWith('blob:')) {
+            base64 = await blobUrlToBase64(imageUrl);
+          } else if (imageUrl.startsWith('/')) {
+            base64 = await localUrlToBase64(imageUrl);
+          } else if (isBase64Image(imageUrl)) {
+            base64 = imageUrl;
+          } else {
+            // Para URLs externas, tentar converter para base64
+            try {
+              const response = await fetch(imageUrl);
+              const blob = await response.blob();
+              base64 = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  if (typeof reader.result === 'string') {
+                    resolve(reader.result);
+                  } else {
+                    reject(new Error('Falha ao converter URL externa para base64'));
+                  }
+                };
+                reader.onerror = () => reject(new Error('Erro ao ler URL externa'));
+                reader.readAsDataURL(blob);
+              });
+            } catch (error) {
+              return imageUrl; // Fallback para o valor original
+            }
+          }
+          
+          const file = base64ToFile(base64, filename);
+          
+          const result = await uploadFunction(file);
+          return result;
+        } catch (error) {
+          return imageUrl; // Fallback para o valor original
+        }
+      };
+      
+      // Upload das fotos do casal
+      const couplePhotoFiles = await Promise.all(
+        fotosCasal.map(async (photo, index) => {
+          
+          if (!shouldUploadImage(photo)) {
+            return null;
+          }
+          
+          try {
+            let base64: string;
+            
+            if (photo.startsWith('blob:')) {
+              base64 = await blobUrlToBase64(photo);
+            } else if (photo.startsWith('/')) {
+              base64 = await localUrlToBase64(photo);
+            } else if (isBase64Image(photo)) {
+              base64 = photo;
+            } else {
+              // Para URLs externas, tentar converter para base64
+              try {
+                const response = await fetch(photo);
+                const blob = await response.blob();
+                base64 = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    if (typeof reader.result === 'string') {
+                      resolve(reader.result);
+                    } else {
+                      reject(new Error('Falha ao converter URL externa para base64'));
+                    }
+                  };
+                  reader.onerror = () => reject(new Error('Erro ao ler URL externa'));
+                  reader.readAsDataURL(blob);
+                });
+              } catch (error) {
+                return null; // Fallback para o valor original
+              }
+            }
+            
+            const file = base64ToFile(base64, `couple-photo-${index}.jpg`);
+            
+            return file;
+          } catch (error) {
+            return null; // Fallback para o valor original
+          }
+        })
+      );
+      
+      // Filtrar arquivos válidos e fazer upload
+      const validFiles = couplePhotoFiles.filter(file => file !== null) as File[];
+      const uploadedCouplePhotos = await weddingService.uploadCouplePhotos(validFiles);
+
+      // Upload das fotos dos padrinhos
+      const uploadedGodparents = await Promise.all(
+        nomesPadrinhos.map(async (nome, index) => {
+          const photo = fotosPadrinhos[index];
+          const uploadedPhoto = photo ? 
+            await processImage(photo, `godparent-photo-${index}.jpg`, weddingService.uploadGodparentPhoto) : 
+            null;
+          
+          return {
+            name: nome,
+            photo: uploadedPhoto,
+            relationship: `Padrinho ${index + 1}`,
+            description: `Padrinho ${index + 1}`
+          };
+        })
+      );
+
+      // Upload da foto do footer
+      const uploadedFooterPhoto = await processImage(
+        footerPhoto, 
+        'footer-photo.jpg', 
+        weddingService.uploadFooterPhoto
+      );
+
+      // Upload das fotos dos presentes
+      const uploadedGifts = await Promise.all(
+        produtos.map(async (produto) => {
+          const uploadedImage = await processImage(
+            produto.image,
+            `gift-${produto.id}.jpg`,
+            weddingService.uploadGiftPhoto
+          );
+          
+          return {
+            name: produto.name,
+            description: produto.description || produto.name,
+            photo: uploadedImage,
+            price: produto.price,
+            store: produto.store || 'Loja Online'
+          };
+        })
+      );
+
       const weddingData = {
         coupleName: `${nomeNoivo} e ${nomeNoiva}`,
         primaryColor: primaryColor,
         weddingDate: brazilianDateToISO(dataCasamento),
         weddingLocation: localCasamento,
-        couplePhotos: fotosCasal, // <-- agora envia as fotos do casal
+        couplePhotos: uploadedCouplePhotos,
         description: textoCasal,
-        godparents: nomesPadrinhos.map((nome, index) => ({
-          name: nome,
-          photo: fotosPadrinhos[index] || null,
-          relationship: `Padrinho ${index + 1}`,
-          description: `Padrinho ${index + 1}`
-        })),
-        gifts: produtos.map(produto => ({
-          name: produto.name,
-          description: produto.name,
-          photo: produto.image,
-          price: produto.price,
-          store: 'Loja Online'
-        })),
-        footerPhoto: footerPhoto
+        godparents: uploadedGodparents,
+        gifts: uploadedGifts,
+        footerPhoto: uploadedFooterPhoto
       };
+      
       await weddingService.createWedding(weddingData);
-      router.push('/'); // Redireciona para a tela inicial
+      router.push('/home'); // Redireciona para a página home
     } catch (error) {
-      console.error('Erro ao salvar casamento:', error);
       alert('Erro ao salvar casamento. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -267,7 +391,7 @@ export default function CriarCasamentoPage() {
           </span>
         </h1>
         <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
-          <Image src="/flores-nova.png" alt="Flores" width={310} height={205} />
+          <Image src="/flores-nova.png" alt="Flores" width={310} height={205} style={{ width: 'auto', height: 'auto' }} />
         </div>
         <div style={{ fontSize: 18, color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           <TextField
@@ -367,45 +491,131 @@ export default function CriarCasamentoPage() {
       {/* Os Padrinhos */}
       <section ref={padrinhosRef} style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>OS PADRINHOS</h1>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 120,
-          justifyContent: 'center',
-          marginBottom: 16,
-          maxWidth: 400,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}>
-          {nomesPadrinhos.map((nome, idx) => (
-            <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <BestManPhoto
-                text={nome}
-                size={80}
-                editable={true}
-                showDelete={true}
-                onPhotoChange={(photoUrl) => {
-                  const novasFotos = [...fotosPadrinhos];
-                  novasFotos[idx] = photoUrl;
-                  setFotosPadrinhos(novasFotos);
+        {nomesPadrinhos.length === 0 ? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 16,
+            maxWidth: 400,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              marginBottom: 16
+            }}>
+              <div
+                style={{ 
+                  width: 120, 
+                  height: 120, 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                  border: '2px dashed #ccc',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: 48, 
+                  color: '#999',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
                 }}
-                onNameChange={(newName) => {
-                  const novosNomes = [...nomesPadrinhos];
-                  novosNomes[idx] = newName;
-                  setNomesPadrinhos(novosNomes);
-                }}
-                onDelete={() => removerPadrinho(idx)}
-              />
+                onClick={adicionarPadrinho}
+                title="Adicionar padrinho"
+              >
+                👥
+              </div>
+              <div style={{ 
+                marginTop: 8, 
+                fontSize: 16, 
+                color: '#666',
+                textAlign: 'center',
+                maxWidth: 200
+              }}>
+                Clique para adicionar seus padrinhos
+              </div>
             </div>
-          ))}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div
-              style={{ width: 80, height: 80, borderRadius: '50%', background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}
+              style={{ 
+                width: 80, 
+                height: 80, 
+                borderRadius: '50%', 
+                background: '#E6F4EA', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                fontSize: 32, 
+                color: '#138263', 
+                cursor: 'pointer',
+                                 transition: 'all 0.2s'
+              }}
               onClick={adicionarPadrinho}
-            >+</div>
-            <div>Adicionar padrinho</div>
+            >
+              +
+            </div>
+            <div style={{ marginTop: 8, fontSize: 14, color: '#138263' }}>Adicionar padrinho</div>
           </div>
-        </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+            gap: 32,
+            justifyContent: 'center',
+            marginBottom: 16,
+            maxWidth: 600,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}>
+            {nomesPadrinhos.map((nome, idx) => (
+              <div key={`padrinho-${idx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <BestManPhoto
+                  text={nome}
+                  size={80}
+                  editable={true}
+                  showDelete={true}
+                  index={idx}
+                  initialPhoto={fotosPadrinhos[idx]}
+                  onPhotoChange={(photoUrl) => {
+                    const novasFotos = [...fotosPadrinhos];
+                    novasFotos[idx] = photoUrl;
+                    setFotosPadrinhos(novasFotos);
+                  }}
+                  onNameChange={(newName) => {
+                    const novosNomes = [...nomesPadrinhos];
+                    novosNomes[idx] = newName;
+                    setNomesPadrinhos(novosNomes);
+                  }}
+                  onDelete={() => removerPadrinho(idx)}
+                />
+              </div>
+            ))}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                style={{ 
+                  width: 80, 
+                  height: 80, 
+                  borderRadius: '50%', 
+                  background: '#E6F4EA', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: 32, 
+                  color: '#138263', 
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onClick={adicionarPadrinho}
+              >
+                +
+              </div>
+              <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>Adicionar padrinho</div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Informações */}
@@ -430,49 +640,20 @@ export default function CriarCasamentoPage() {
           />
           <EditIcon sx={{ color: '#fff', fontSize: 18 }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
-          <Image src="/flores-nova.png" alt="Flores" width={310} height={205} />
-        </div>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+        <Image src="/flores-nova.png" alt="Flores" width={310} height={205} style={{ width: 'auto', height: 'auto' }} />
+      </div>
         <div style={{ fontSize: 18 }}>{dataCasamento}</div>
       </section>
 
       {/* Lista de Presentes */}
       <section ref={presentesRef} style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>LISTA DE PRESENTES</h1>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: 24,
-          justifyContent: 'center',
-          marginBottom: 16,
-          maxWidth: 1200,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}>
-          {produtos.map((produto) => (
-            <div key={produto.id} style={{ margin: 8 }}>
-              <Product
-                id={produto.id}
-                name={produto.name}
-                price={produto.price}
-                image={produto.image}
-                editable={true}
-                showDelete={true}
-                onNameChange={(newName) => handleProductNameChange(produto.id, newName)}
-                onPriceChange={(newPrice) => handleProductPriceChange(produto.id, newPrice)}
-                onImageChange={(newImage) => handleProductImageChange(produto.id, newImage)}
-                onDelete={() => handleProductDelete(produto.id)}
-              />
-            </div>
-          ))}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 8 }}>
-            <div
-              style={{ width: 250, height: 280, borderRadius: 16, background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#138263', cursor: 'pointer' }}
-              onClick={adicionarProduto}
-            >+</div>
-            <div style={{ marginTop: 8, color: '#555' }}>Adicionar produto</div>
-          </div>
-        </div>
+        <GiftManager
+          gifts={produtos}
+          onGiftsChange={setProdutos}
+          primaryColor={primaryColor}
+        />
       </section>
 
       {/* Mensagem final */}

@@ -24,6 +24,7 @@ interface PaymentModalProps {
   giftId: number;
   amount: number;
   payerEmail: string;
+  primaryColor?: string;
   onSuccess: () => void;
   onError: (message: string) => void;
 }
@@ -36,6 +37,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   giftId,
   amount,
   payerEmail,
+  primaryColor = '#1976d2',
   onSuccess,
   onError
 }) => {
@@ -100,7 +102,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {!selectedMethod ? (
           <Box>
             <Box textAlign="center" mb={3}>
-              <Typography variant="h4" color="primary" gutterBottom>
+              <Typography variant="h4" sx={{ color: primaryColor }} gutterBottom>
                 R$ {typeof amount === 'number' ? amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -131,7 +133,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                             width: 64,
                             height: 64,
                             borderRadius: '50%',
-                            bgcolor: 'success.main',
+                            bgcolor: primaryColor,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -146,7 +148,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         <Typography variant="body2" color="text.secondary" textAlign="center">
                           Pagamento instantâneo via Pix
                         </Typography>
-                        <Chip label="Recomendado" color="success" size="small" />
+                        <Chip 
+                          label="Recomendado" 
+                          sx={{ 
+                            bgcolor: primaryColor, 
+                            color: 'white',
+                            '&:hover': {
+                              bgcolor: primaryColor
+                            }
+                          }} 
+                          size="small" 
+                        />
                       </Box>
                     </CardContent>
                   </CardActionArea>
@@ -175,7 +187,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                             width: 64,
                             height: 64,
                             borderRadius: '50%',
-                            bgcolor: 'primary.main',
+                            bgcolor: primaryColor,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',

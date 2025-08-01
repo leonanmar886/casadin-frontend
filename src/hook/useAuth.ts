@@ -13,9 +13,17 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<AuthResponse['user'] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Verificar se o componente está montado no cliente
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Carrega o perfil do usuário se houver token OU do localStorage
   useEffect(() => {
+    if (!mounted) return;
+    
     const loadProfile = async () => {
       const token = authService.getToken();
       const storedUser = localStorage.getItem('user');
@@ -41,7 +49,7 @@ export function useAuth(): UseAuthReturn {
       }
     };
     loadProfile();
-  }, []);
+  }, [mounted]);
 
   const login = useCallback(async (data: LoginDto) => {
     setLoading(true);

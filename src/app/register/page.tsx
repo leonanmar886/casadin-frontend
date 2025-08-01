@@ -10,8 +10,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import registerBanner from "../../assets/register-banner.png";
 import arrowBack from "../../assets/arrow-back.svg";
+import registerBanner from "../../assets/register-banner.png";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -101,7 +101,7 @@ export default function LoginPage() {
                         zIndex: 2,
                     }}
                 >
-                    <Image src={arrowBack} alt="Voltar" width={45} height={28} />
+                    <Image src={arrowBack} alt="Voltar" width={45} height={28} style={{ width: 'auto', height: 'auto' }} />
                 </Link>
                 <Typography
                     sx={{

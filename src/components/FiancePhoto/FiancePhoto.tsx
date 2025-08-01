@@ -1,9 +1,9 @@
 // src/app/components/FiancePhoto.tsx
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import PersonIcon from '@mui/icons-material/Person';
 import React, { useRef, useState } from 'react';
-import EditIcon from '@mui/icons-material/Edit';
 
 interface FiancePhotoProps {
   text: string;
@@ -65,7 +65,30 @@ const FiancePhoto: React.FC<FiancePhotoProps> = ({
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <PersonIcon sx={{ color: '#e0e0e0', fontSize: size * 0.3 }} />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#e0e0e0',
+              textAlign: 'center',
+              p: 2,
+            }}
+          >
+            <PersonIcon sx={{ fontSize: size * 0.2, mb: 1 }} />
+            <Typography
+              sx={{
+                fontSize: size * 0.08,
+                fontWeight: 400,
+                color: '#999',
+                textAlign: 'center',
+                lineHeight: 1.2,
+              }}
+            >
+              Clique para adicionar foto
+            </Typography>
+          </Box>
         )}
         {editable && (
           <>

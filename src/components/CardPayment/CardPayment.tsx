@@ -1,14 +1,14 @@
 import { CardPayment } from '@mercadopago/sdk-react';
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Stack,
-  Typography
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Stack,
+    Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { getDefaultInitialization, initializeMercadoPagoReact } from '../../config/mercadopago-react';
@@ -45,14 +45,12 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
 
   // Callback quando o Brick está pronto
   const onReady = () => {
-    console.log('Card Payment Brick pronto');
     setPaymentStatus('Formulário carregado');
     setBrickError('');
   };
 
   // Callback quando o usuário submete o formulário
   const onSubmit = async (formData: { token: string }) => {
-    console.log('Dados do formulário:', formData);
     setLoading(true);
     setPaymentStatus('Processando pagamento...');
 
@@ -75,7 +73,6 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
         onErrorProp(`Pagamento não aprovado: ${payment.status}`);
       }
     } catch (error) {
-      console.error('Erro ao processar pagamento:', error);
       setPaymentStatus('Erro no pagamento');
       onErrorProp('Erro ao processar pagamento. Verifique os dados do cartão.');
     } finally {
@@ -133,7 +130,6 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
               onSubmit={onSubmit}
               onReady={onReady}
               onError={(error) => {
-                console.error('Erro no Brick:', error);
                 setPaymentStatus('Erro no formulário');
                 setBrickError('Erro ao carregar formulário de pagamento');
                 onErrorProp('Erro no formulário de pagamento');

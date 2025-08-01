@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { Box, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { Box, IconButton } from '@mui/material';
 import Image from 'next/image';
+import React, { useRef, useState } from 'react';
 
 interface EditablePhotoProps {
   src: string;
@@ -51,17 +51,57 @@ const EditablePhoto: React.FC<EditablePhotoProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        style={{
-          borderRadius: style.borderRadius || 16,
-          objectFit: style.objectFit || 'cover',
-          ...style
-        }}
-      />
+      {src && src !== 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' ? (
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          style={{
+            borderRadius: style.borderRadius || 16,
+            objectFit: style.objectFit || 'cover',
+            ...style
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            width: width,
+            height: height,
+            borderRadius: style.borderRadius || 16,
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px dashed #ccc',
+            color: '#666',
+            textAlign: 'center',
+            p: 2,
+          }}
+        >
+          <Box
+            sx={{
+              fontSize: width * 0.15,
+              mb: 1,
+              color: '#999',
+            }}
+          >
+            📷
+          </Box>
+          <Box
+            sx={{
+              fontSize: width * 0.04,
+              fontWeight: 500,
+              color: '#666',
+              textAlign: 'center',
+              lineHeight: 1.2,
+            }}
+          >
+            Clique para adicionar foto
+          </Box>
+        </Box>
+      )}
       
       {editable && isHovered && (
         <Box

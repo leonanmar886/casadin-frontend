@@ -1,14 +1,14 @@
 import { ContentCopy, OpenInNew } from '@mui/icons-material';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Divider,
-  Stack,
-  Typography
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Divider,
+    Stack,
+    Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { MercadoPagoPaymentResponse, paymentService, PaymentStatusResponse } from '../../services/paymentService';
@@ -61,7 +61,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
       // Iniciar monitoramento de status
       startStatusPolling(paymentResponse.id);
     } catch (error) {
-      console.error('Erro ao criar pagamento Pix:', error);
+      // Erro ao criar pagamento Pix
       onError('Erro ao criar pagamento Pix. Tente novamente.');
     } finally {
       setLoading(false);
@@ -74,7 +74,6 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
       paymentId,
       (statusResponse: PaymentStatusResponse) => {
         setStatus(statusResponse.status);
-        console.log('Status atualizado:', statusResponse.status);
       },
       (finalStatus: string) => {
         if (finalStatus === 'approved') {
@@ -94,7 +93,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
       await navigator.clipboard.writeText(pixCode);
       // Você pode adicionar uma notificação de sucesso aqui
     } catch (error) {
-      console.error('Erro ao copiar código Pix:', error);
+      // Erro ao copiar código Pix
     }
   };
 

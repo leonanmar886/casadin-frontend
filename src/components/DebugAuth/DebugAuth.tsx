@@ -16,16 +16,11 @@ export const DebugAuth: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
-    setToken(localStorage.getItem('auth_token'));
-  }, []);
+    // Debug de autenticação
+  }, [user, isAuthenticated, token]);
 
   const checkAuth = () => {
-    console.log('=== DEBUG AUTH ===');
-    console.log('User:', user);
-    console.log('Is Authenticated:', isAuthenticated);
-    console.log('Token:', token ? 'Presente' : 'Ausente');
-    console.log('Token Value:', token);
-    console.log('==================');
+    // Debug de autenticação - informações no console
   };
 
   if (!isClient) {

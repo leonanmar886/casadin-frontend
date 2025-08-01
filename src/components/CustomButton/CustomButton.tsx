@@ -36,7 +36,7 @@ export default function CustomButton({
         }}
       >
         {/* Flores antes do texto */}
-        <Image src={flores} alt="Flores" width={24} height={24} />
+        <Image src={flores} alt="Flores" width={24} height={24} style={{ width: 'auto', height: 'auto' }} />
         {children}
         
         {/* Adorno inferior esquerdo */}
@@ -48,7 +48,7 @@ export default function CustomButton({
             zIndex: 1,
           }}
         >
-          <Image src={adornoBotao} alt="Adorno" width={30} height={30} />
+          <Image src={adornoBotao} alt="Adorno" width={30} height={30} style={{ width: 'auto', height: 'auto' }} />
         </Box>
         
         {/* Adorno superior direito (invertido) */}
@@ -61,7 +61,7 @@ export default function CustomButton({
             transform: "rotate(180deg)",
           }}
         >
-          <Image src={adornoBotao} alt="Adorno" width={30} height={30} />
+          <Image src={adornoBotao} alt="Adorno" width={30} height={30} style={{ width: 'auto', height: 'auto' }} />
         </Box>
       </Button>
     </Box>

@@ -41,7 +41,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, onClose, user, logout }
                             {user?.name || 'Usuário'}
                         </Typography>
                         <IconButton onClick={onClose} sx={{ ml: 'auto' }}>
-                            <Image src={xClose} alt="Fechar" width={20} height={20} />
+                            <Image src={xClose} alt="Fechar" width={20} height={20} style={{ width: 'auto', height: 'auto' }} />
                         </IconButton>
                     </Box>
                     <Box sx={{ borderBottom: '0.666px solid #707070', mb: 2 }} />
@@ -65,7 +65,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open, onClose, user, logout }
                         },
                     }}
                 >
-                    <Image src={logoutIcon} alt="Logout" width={18} height={18} />
+                    <Image src={logoutIcon} alt="Logout" width={18} height={18} style={{ width: 'auto', height: 'auto' }} />
                     <Typography
                         sx={{
                             fontFamily: 'var(--font-figtree)',

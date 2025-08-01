@@ -95,6 +95,14 @@ export const simulateError = (errorType: 'network' | 'invalid_data' | 'server_er
 
 // Função para testar responsividade
 export const testResponsiveness = () => {
+  if (typeof window === 'undefined') {
+    return {
+      isMobile: false,
+      isTablet: false,
+      isDesktop: true
+    };
+  }
+  
   const breakpoints = {
     mobile: 375,
     tablet: 768,
