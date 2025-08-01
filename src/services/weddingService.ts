@@ -17,6 +17,18 @@ interface Gift {
   store: string;
 }
 
+interface PaymentStats {
+  id: number;
+  name: string;
+  price: string;
+  amountPaid: string;
+  amountRemaining: string;
+  isFullyPaid: boolean;
+  progressPercentage: number;
+  paymentStatus: string;
+  paidAt: string | null;
+}
+
 interface WeddingData {
   coupleName: string;
   primaryColor: string;
@@ -53,6 +65,11 @@ export const weddingService = {
 
   getMyWeddings: async () => {
     const response = await api.get('/weddings/my-weddings');
+    return response.data;
+  },
+
+  getGiftPaymentStats: async (giftId: number): Promise<PaymentStats> => {
+    const response = await api.get(`/weddings/gifts/${giftId}/payment-stats`);
     return response.data;
   },
 };

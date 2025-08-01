@@ -55,7 +55,7 @@ export const PaymentTest: React.FC = () => {
     }
     
     addTestResult(`🚀 Iniciando teste: ${testData.description}`);
-    addTestResult(`💰 Valor: R$ ${testData.amount.toFixed(2)}`);
+    addTestResult(`💰 Valor: R$ ${testData.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     addTestResult(`🎯 Cenário: ${testData.testScenario}`);
     setShowPaymentModal(true);
   };

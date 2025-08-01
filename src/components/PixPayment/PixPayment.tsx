@@ -1,14 +1,14 @@
 import { ContentCopy, OpenInNew } from '@mui/icons-material';
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Chip,
-    CircularProgress,
-    Divider,
-    Stack,
-    Typography
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Divider,
+  Stack,
+  Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { MercadoPagoPaymentResponse, paymentService, PaymentStatusResponse } from '../../services/paymentService';
@@ -167,7 +167,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
           </Typography>
           
           <Typography variant="h4" component="div" align="center" color="primary" gutterBottom>
-            R$ {amount.toFixed(2)}
+            R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Typography>
 
           {status && (

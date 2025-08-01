@@ -1,14 +1,14 @@
 import { CardPayment } from '@mercadopago/sdk-react';
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Chip,
-    CircularProgress,
-    Stack,
-    Typography
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Stack,
+  Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { getDefaultInitialization, initializeMercadoPagoReact } from '../../config/mercadopago-react';
@@ -51,13 +51,12 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
   };
 
   // Callback quando o usuário submete o formulário
-  const onSubmit = async (formData: any) => {
+  const onSubmit = async (formData: { token: string }) => {
     console.log('Dados do formulário:', formData);
     setLoading(true);
     setPaymentStatus('Processando pagamento...');
 
     try {
-      // Enviar dados para o backend
       const payment = await paymentService.createCardPayment(
         giftId,
         amount,
@@ -65,18 +64,12 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
         payerEmail
       );
 
-      console.log('Resposta do pagamento:', payment);
-
       if (payment.status === 'approved') {
         setPaymentStatus('Pagamento aprovado!');
-        setTimeout(() => {
-          onSuccess();
-        }, 2000);
+        setTimeout(() => onSuccess(), 2000);
       } else if (payment.status === 'pending') {
         setPaymentStatus('Pagamento pendente - aguardando confirmação');
-        setTimeout(() => {
-          onSuccess(); // Considerar sucesso mesmo pendente
-        }, 3000);
+        setTimeout(() => onSuccess(), 3000); // Consider success even if pending for now
       } else {
         setPaymentStatus(`Status: ${payment.status}`);
         onErrorProp(`Pagamento não aprovado: ${payment.status}`);
@@ -90,15 +83,7 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
     }
   };
 
-  // Callback para erros do Brick
-  const onError = (error: any) => {
-    console.error('Erro no Brick:', error);
-    setPaymentStatus('Erro no formulário');
-    setBrickError('Erro ao carregar formulário de pagamento');
-    onErrorProp('Erro no formulário de pagamento');
-  };
-
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): 'success' | 'error' | 'warning' | 'info' => {
     if (status.includes('aprovado')) return 'success';
     if (status.includes('erro') || status.includes('rejeitado')) return 'error';
     if (status.includes('pendente')) return 'warning';
@@ -114,14 +99,14 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
           </Typography>
           
           <Typography variant="h4" component="div" align="center" color="primary" gutterBottom>
-            R$ {amount.toFixed(2)}
+            R$ {typeof amount === 'number' ? amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}
           </Typography>
 
           {paymentStatus && (
             <Box mb={2}>
               <Chip
                 label={paymentStatus}
-                color={getStatusColor(paymentStatus) as any}
+                color={getStatusColor(paymentStatus)}
                 sx={{ width: '100%' }}
               />
             </Box>
@@ -147,7 +132,12 @@ export const CardPaymentComponent: React.FC<CardPaymentProps> = ({
               initialization={initialization}
               onSubmit={onSubmit}
               onReady={onReady}
-              onError={onError}
+              onError={(error) => {
+                console.error('Erro no Brick:', error);
+                setPaymentStatus('Erro no formulário');
+                setBrickError('Erro ao carregar formulário de pagamento');
+                onErrorProp('Erro no formulário de pagamento');
+              }}
             />
           </Box>
 

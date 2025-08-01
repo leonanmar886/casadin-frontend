@@ -1,136 +1,350 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { weddingService } from "@/services/weddingService";
-import Navbar from "@/components/Navbar";
-import FiancePhoto from "@/components/FiancePhoto/FiancePhoto";
 import BestManPhoto from "@/components/BestManPhoto/BestManPhoto";
+import CopyWeddingCodeButton from "@/components/CopyWeddingCody/CopyWeddingCodeButton";
 import CountdownTimer from "@/components/CountdownTimer";
 import EditablePhoto from "@/components/EditablePhoto";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Product from "@/components/Product";
-import CopyWeddingCodeButton from "@/components/CopyWeddingCody/CopyWeddingCodeButton";
+import FiancePhoto from "@/components/FiancePhoto/FiancePhoto";
+import Navbar from "@/components/Navbar";
+import { Product } from "@/components/Product";
+import { weddingService } from "@/services/weddingService";
+import {
+    Alert,
+    Box,
+    CircularProgress,
+    Container,
+    Grid,
+    Typography
+} from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+
+interface Wedding {
+  id: number;
+  coupleName: string;
+  weddingDate: string;
+  weddingLocation: string;
+  description: string;
+  primaryColor: string;
+  invitationCode?: string;
+  couplePhotos?: string[];
+  godparents?: Array<{
+    name: string;
+    photo?: string;
+  }>;
+  gifts?: Array<{
+    id?: number;
+    name: string;
+    price: number;
+    photo: string;
+    description?: string;
+  }>;
+  footerPhoto?: string;
+}
 
 export default function MyWeddingPage() {
-    const [wedding, setWedding] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+  const [wedding, setWedding] = useState<Wedding | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const homeRef = useRef<HTMLDivElement>(null);
-    const casalRef = useRef<HTMLDivElement>(null);
-    const padrinhosRef = useRef<HTMLDivElement>(null);
-    const infoRef = useRef<HTMLDivElement>(null);
-    const presentesRef = useRef<HTMLDivElement>(null);
+  const homeRef = useRef<HTMLDivElement>(null);
+  const casalRef = useRef<HTMLDivElement>(null);
+  const padrinhosRef = useRef<HTMLDivElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
+  const presentesRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const fetchWedding = async () => {
-            try {
-                const data = await weddingService.getMyWeddings();
-                if (data && data.length > 0) {
-                    setWedding(data[0]);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchWedding();
-    }, []);
+  useEffect(() => {
+    const fetchWedding = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await weddingService.getMyWeddings();
+        if (data && data.length > 0) {
+          setWedding(data[0]);
+        } else {
+          setError("Nenhum casamento encontrado.");
+        }
+      } catch (err) {
+        console.error("Erro ao carregar casamento:", err);
+        setError("Erro ao carregar dados do casamento.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchWedding();
+  }, []);
 
-    if (loading) {
-        return <div style={{ textAlign: 'center', marginTop: 60 }}>Carregando...</div>;
-    }
-    if (!wedding) {
-        return <div style={{ textAlign: 'center', marginTop: 60 }}>Nenhum casamento encontrado.</div>;
-    }
-
+  if (loading) {
     return (
-        <div style={{ background: '#F8F8F8', minHeight: '100vh', paddingTop: '66.6px' }}>
-            <Navbar
-                primaryColor={wedding.primaryColor || "#138263"}
-                showScrollNav={true}
-                homeRef={homeRef}
-                casalRef={casalRef}
-                padrinhosRef={padrinhosRef}
-                infoRef={infoRef}
-                presentesRef={presentesRef}
-                showAvatar={false}
-            />
-            {/* Seção do casal */}
-            <section ref={casalRef} style={{ background: '#fff', padding: 40, textAlign: 'center', position: 'relative' }}>
-                <h1 style={{ fontSize: 36, fontWeight: 400, margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-                    {wedding.coupleName}
-                </h1>
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
-                    <img src="/flores-nova.png" alt="Flores" width={310} height={205} />
-                </div>
-                <div style={{ fontSize: 18, color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    {wedding.weddingDate}
-                </div>
-                {/* Botão do código do casamento */}
-                {wedding.invitationCode && (
-                    <CopyWeddingCodeButton
-                        code={wedding.invitationCode}
-                        primaryColor={wedding.primaryColor || '#138263'}
-                        textColor="#fff"
-                    />
-                )}
-
-            </section>
-            {/* Contagem regressiva */}
-            <section style={{ background: wedding.primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
-                <CountdownTimer targetDate={wedding.weddingDate} size="large" />
-            </section>
-            {/* O Casal */}
-            <section style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
-                <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>O CASAL</h1>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 24 }}>
-                    <FiancePhoto text={wedding.coupleName.split(' e ')[0]} editable={false} initialPhoto={wedding.couplePhotos?.[0]} />
-                    <FiancePhoto text={wedding.coupleName.split(' e ')[1] || ''} editable={false} initialPhoto={wedding.couplePhotos?.[1]} />
-                </div>
-                <div style={{ maxWidth: 700, margin: '0 auto', color: '#555', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <div style={{ fontSize: 16, color: '#555', width: '100%', minHeight: 80 }}>{wedding.description}</div>
-                </div>
-            </section>
-            {/* Os Padrinhos */}
-            <section ref={padrinhosRef} style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
-                <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>OS PADRINHOS</h1>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 120, justifyContent: 'center', marginBottom: 16, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
-                    {wedding.godparents?.map((padrinho: any, idx: number) => (
-                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <BestManPhoto text={padrinho.name} size={80} editable={false} showDelete={false} initialPhoto={padrinho.photo} />
-                        </div>
-                    ))}
-                </div>
-            </section>
-            {/* Informações */}
-            <section ref={infoRef} style={{ background: wedding.primaryColor, color: '#fff', padding: 32, textAlign: 'center' }}>
-                <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>INFORMAÇÕES</h1>
-                <div style={{ fontSize: 18, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 18 }}>{wedding.weddingLocation}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
-                    <img src="/flores-nova.png" alt="Flores" width={310} height={205} />
-                </div>
-                <div style={{ fontSize: 18 }}>{wedding.weddingDate}</div>
-            </section>
-            {/* Lista de Presentes */}
-            <section ref={presentesRef} style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
-                <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}>LISTA DE PRESENTES</h1>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 24, justifyContent: 'center', marginBottom: 16, maxWidth: 1200, marginLeft: 'auto', marginRight: 'auto' }}>
-                    {wedding.gifts?.map((produto: any, idx: number) => (
-                        <div key={idx} style={{ margin: 8 }}>
-                            <Product id={idx} name={produto.name} price={produto.price} image={produto.photo} editable={false} showDelete={false} />
-                        </div>
-                    ))}
-                </div>
-            </section>
-            {/* Mensagem final */}
-            <section style={{ background: '#fff', padding: 32, textAlign: 'center' }}>
-                <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>CONTAMOS COM SUA PRESENÇA!</h1>
-                <div style={{ margin: '0 auto 16px', maxWidth: 600 }}>
-                    <EditablePhoto src={wedding.footerPhoto} alt="Casal" width={600} height={200} style={{ borderRadius: 16, objectFit: 'cover' }} editable={false} />
-                </div>
-                <div style={{ color: '#555', fontSize: 16 }}>Com carinho, {wedding.coupleName}.</div>
-            </section>
-        </div>
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="100vh"
+        sx={{ background: '#F8F8F8' }}
+      >
+        <CircularProgress size={60} />
+      </Box>
     );
+  }
+
+  if (error || !wedding) {
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="100vh"
+        sx={{ background: '#F8F8F8' }}
+      >
+        <Alert severity="error" sx={{ maxWidth: 400 }}>
+          {error || "Nenhum casamento encontrado."}
+        </Alert>
+      </Box>
+    );
+  }
+
+  const coupleNames = wedding.coupleName.split(' e ');
+  const primaryColor = wedding.primaryColor || "#138263";
+
+  return (
+    <Box sx={{ background: '#F8F8F8', minHeight: '100vh', paddingTop: '66.6px' }}>
+      <Navbar
+        primaryColor={primaryColor}
+        showScrollNav={true}
+        homeRef={homeRef}
+        casalRef={casalRef}
+        padrinhosRef={padrinhosRef}
+        infoRef={infoRef}
+        presentesRef={presentesRef}
+        showAvatar={false}
+      />
+      
+      {/* Seção do casal */}
+      <Box 
+        ref={casalRef}
+        sx={{ 
+          background: '#fff', 
+          py: 5, 
+          textAlign: 'center', 
+          position: 'relative' 
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography 
+            variant="h2" 
+            component="h1" 
+            sx={{ 
+              fontWeight: 400, 
+              mb: 2,
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: 1 
+            }}
+          >
+            {wedding.coupleName}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <img src="/flores-nova.png" alt="Flores" width={310} height={205} />
+          </Box>
+          
+          <Typography 
+            variant="h6" 
+            color="text.secondary"
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 0.5 
+            }}
+          >
+            {wedding.weddingDate}
+          </Typography>
+          
+          {/* Botão do código do casamento */}
+          {wedding.invitationCode && (
+            <Box sx={{ mt: 3 }}>
+              <CopyWeddingCodeButton
+                code={wedding.invitationCode}
+                primaryColor={primaryColor}
+                textColor="#fff"
+              />
+            </Box>
+          )}
+        </Container>
+      </Box>
+
+      {/* Contagem regressiva */}
+      <Box 
+        sx={{ 
+          background: primaryColor, 
+          color: '#fff', 
+          py: 4, 
+          textAlign: 'center' 
+        }}
+      >
+        <Container maxWidth="md">
+          <CountdownTimer targetDate={wedding.weddingDate} size="large" />
+        </Container>
+      </Box>
+
+      {/* O Casal */}
+      <Box sx={{ background: '#fff', py: 4, textAlign: 'center' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h3" component="h2" sx={{ fontWeight: 600, mb: 3 }}>
+            O CASAL
+          </Typography>
+          
+          <Grid container spacing={4} justifyContent="center" sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FiancePhoto 
+                text={coupleNames[0]} 
+                editable={false} 
+                initialPhoto={wedding.couplePhotos?.[0]} 
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FiancePhoto 
+                text={coupleNames[1] || ''} 
+                editable={false} 
+                initialPhoto={wedding.couplePhotos?.[1]} 
+              />
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ maxWidth: 700, mx: 'auto' }}>
+            <Typography 
+              variant="body1" 
+              color="text.secondary" 
+              sx={{ 
+                minHeight: 80,
+                lineHeight: 1.6
+              }}
+            >
+              {wedding.description}
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Os Padrinhos */}
+      <Box ref={padrinhosRef} sx={{ background: '#fff', py: 4, textAlign: 'center' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h3" component="h2" sx={{ fontWeight: 600, mb: 3 }}>
+            OS PADRINHOS
+          </Typography>
+          
+          <Grid 
+            container 
+            spacing={3} 
+            justifyContent="center"
+            sx={{ 
+              maxWidth: 600, 
+              mx: 'auto' 
+            }}
+          >
+            {wedding.godparents?.map((padrinho, idx) => (
+              <Grid size={{ xs: 12, sm: 4 }} key={idx}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <BestManPhoto 
+                    text={padrinho.name} 
+                    size={80} 
+                    editable={false} 
+                    showDelete={false} 
+                    initialPhoto={padrinho.photo} 
+                  />
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Informações */}
+      <Box 
+        ref={infoRef}
+        sx={{ 
+          background: primaryColor, 
+          color: '#fff', 
+          py: 4, 
+          textAlign: 'center' 
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 600, mb: 1 }}>
+            INFORMAÇÕES
+          </Typography>
+          
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {wedding.weddingLocation}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+            <img src="/flores-nova.png" alt="Flores" width={310} height={205} />
+          </Box>
+          
+          <Typography variant="h6">
+            {wedding.weddingDate}
+          </Typography>
+        </Container>
+      </Box>
+
+      {/* Lista de Presentes */}
+      <Box ref={presentesRef} sx={{ background: '#fff', py: 4, textAlign: 'center' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h3" component="h2" sx={{ fontWeight: 600, mb: 3 }}>
+            LISTA DE PRESENTES
+          </Typography>
+          
+          <Grid 
+            container 
+            spacing={3} 
+            justifyContent="center"
+            sx={{ maxWidth: 1200, mx: 'auto' }}
+          >
+            {wedding.gifts?.map((produto, idx) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={idx}>
+                <Product 
+                  id={produto.id || (idx + 1)} 
+                  name={produto.name} 
+                  description={produto.description || produto.name}
+                  price={produto.price} 
+                  image={produto.photo} 
+                  primaryColor={primaryColor}
+                  editable={false} 
+                  showDelete={false} 
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Mensagem final */}
+      <Box sx={{ background: '#fff', py: 4, textAlign: 'center' }}>
+        <Container maxWidth="md">
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 600, mb: 2 }}>
+            CONTAMOS COM SUA PRESENÇA!
+          </Typography>
+          
+          {wedding.footerPhoto && (
+            <Box sx={{ mb: 2, maxWidth: 600, mx: 'auto' }}>
+              <EditablePhoto 
+                src={wedding.footerPhoto} 
+                alt="Casal" 
+                width={600} 
+                height={200} 
+                style={{ borderRadius: 16, objectFit: 'cover' }} 
+                editable={false} 
+              />
+            </Box>
+          )}
+          
+          <Typography variant="body1" color="text.secondary">
+            Com carinho, {wedding.coupleName}.
+          </Typography>
+        </Container>
+      </Box>
+    </Box>
+  );
 }

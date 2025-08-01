@@ -101,7 +101,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <Box>
             <Box textAlign="center" mb={3}>
               <Typography variant="h4" color="primary" gutterBottom>
-                R$ {amount.toFixed(2)}
+                R$ {typeof amount === 'number' ? amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Selecione como deseja pagar:
