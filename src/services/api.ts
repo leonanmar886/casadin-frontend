@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3001',
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -15,13 +15,13 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Configuração específica para uploads de arquivo
     if (config.data instanceof FormData) {
       // Remover Content-Type para que o browser defina automaticamente com boundary
       delete config.headers['Content-Type'];
     }
-    
+
     return config;
   },
   (error) => {
